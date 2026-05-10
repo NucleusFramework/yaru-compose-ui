@@ -1,5 +1,7 @@
 package dev.nucleusframework.yarucompose.widgets
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -65,6 +67,14 @@ fun YaruIconButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     iconSize: Dp = YaruConstants.IconSize,
+    // Mirrors `_IconButtonDefaultsM3.minimumSize = Size(40, 40)`
+    // (material/icon_button.dart:1130). Yaru sets `fixedSize: Size(iconSize, iconSize)`
+    // (yaru_icon_button.dart:50) but `_RenderButton` clamps it through
+    // `effectiveConstraints.constrain(resolvedFixedSize)`
+    // (button_style_button.dart:482), so `Size(20, 20)` becomes `Size(40, 40)` —
+    // a 40 dp circular state-layer wraps a 20 dp icon. Without this, the
+    // overlay is the icon's exact size and hover/press is barely visible.
+    minimumSize: Dp = 40.dp,
     isSelected: Boolean? = null,
     shape: Shape = CircleShape,
     // Suppress: API parity stub — see kdoc; will be wired once a foundation-only tooltip primitive lands. Removing the param would break source compatibility with yaru.dart.
@@ -91,6 +101,13 @@ fun YaruIconButton(
     } else {
         YaruConstants.IconSize
     }
+    // Match Flutter's `fixedSize` clamp: button = max(iconSize, minimumSize).
+    val safeMinimumSize = if (minimumSize.value.isFinite()) {
+        minimumSize.coerceAtLeast(0.dp)
+    } else {
+        40.dp
+    }
+    val buttonSize = if (safeIconSize > safeMinimumSize) safeIconSize else safeMinimumSize
 
     val backgroundColor = if (selected) {
         // Selected fill = `onSurface @ 0.10`, see `defaultStyleOf` in
@@ -123,17 +140,31 @@ fun YaruIconButton(
         focused -> if (selected) 0.12f else 0.08f
         else -> 0f
     }
-    val overlayBackground = if (overlayAlpha > 0f) {
+    val targetOverlay = if (overlayAlpha > 0f) {
         overlayBase.copy(alpha = overlayAlpha).compositeOver(backgroundColor)
     } else {
         backgroundColor
     }
+    // Mirrors `InkResponse.hoverDuration` default of 50 ms
+    // (material/ink_well.dart:1001) — Yaru disables the splash via
+    // `splashFactory: NoSplash.splashFactory` (common_themes.dart),
+    // so the visible state-layer change is the InkWell hover/highlight
+    // fade. Without this animation, hover/press snaps and the button
+    // looks "dead" compared to the Dart version.
+    val overlayBackground by animateColorAsState(
+        targetValue = targetOverlay,
+        animationSpec = tween(durationMillis = 50),
+        label = "yaru-icon-button-overlay",
+    )
 
     val button: @Composable () -> Unit = {
         Box(
             modifier = Modifier
-                // `fixedSize: Size(iconSize, iconSize)` from Dart `defaultStyleOf`.
-                .size(safeIconSize)
+                // `fixedSize` clamped through `effectiveConstraints` against
+                // `_IconButtonDefaultsM3.minimumSize` (40 dp) — see kdoc on
+                // [minimumSize]. The visible icon stays at `safeIconSize`,
+                // centered within this larger hit/state-layer box.
+                .size(buttonSize)
                 // Defensive: forward caller-supplied accessibility label to TalkBack/VoiceOver so an icon-only button is not announced as just "Button"; treat empty as "no label" so an inner `YaruIcon(semanticLabel = ...)` is not overridden.
                 // Defensive: also reject whitespace-only labels — they would be announced as silence by screen readers while still suppressing the inner icon's own label.
                 .let { m -> if (!semanticLabel.isNullOrBlank()) m.semantics { contentDescription = semanticLabel } else m }
