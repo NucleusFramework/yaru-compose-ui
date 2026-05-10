@@ -243,12 +243,17 @@ internal fun YaruAnimatedDialogHost(
 /**
  * Yaru dialog chrome: window-radius corners, menu-tinted background, and
  * the dark/HC border from `_createDialogTheme` in `common_themes.dart`.
- * Extracted so [YaruDialog] and the inline dialog in `BannerPage` share the
- * same surface treatment under the animated host.
+ *
+ * Public so callers that render a `SimpleDialog`-style surface inline (without
+ * Compose's modal `Dialog` host) — like the `TabBarPage` mirror of
+ * `yaru.dart/example/lib/pages/tab_bar_page.dart` — get the same chrome as
+ * the modal [YaruDialog].
  */
 @Composable
-internal fun YaruDialogSurface(
+fun YaruDialogSurface(
     modifier: Modifier = Modifier,
+    minWidth: Dp = 280.dp,
+    maxWidth: Dp? = 560.dp,
     content: @Composable () -> Unit,
 ) {
     val scheme = LocalYaruColorScheme.current
@@ -273,7 +278,13 @@ internal fun YaruDialogSurface(
     Box(
         modifier = modifier
             .width(IntrinsicSize.Max)
-            .widthIn(min = 280.dp, max = 560.dp)
+            .then(
+                if (maxWidth != null) {
+                    Modifier.widthIn(min = minWidth, max = maxWidth)
+                } else {
+                    Modifier.widthIn(min = minWidth)
+                },
+            )
             // Material 3 `_DialogDefaultsM3.elevation = 6.0` (material/dialog.dart).
             // Yaru does not override `dialogTheme.elevation` in
             // `_createDialogTheme` (common_themes.dart L315-331), so the M3

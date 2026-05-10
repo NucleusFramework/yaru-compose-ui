@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
@@ -17,25 +18,28 @@ import androidx.compose.ui.unit.dp
 import dev.nucleusframework.yarucompose.icons.YaruIcon
 import dev.nucleusframework.yarucompose.icons.YaruIcons
 import dev.nucleusframework.yarucompose.themes.LocalYaruColorScheme
-import dev.nucleusframework.yarucompose.widgets.YaruBorderContainer
+import dev.nucleusframework.yarucompose.widgets.YaruDialogSurface
+import dev.nucleusframework.yarucompose.widgets.YaruDialogTitleBar
 import dev.nucleusframework.yarucompose.widgets.YaruOptionButton
 import dev.nucleusframework.yarucompose.widgets.YaruTab
 import dev.nucleusframework.yarucompose.widgets.YaruTabBar
-import dev.nucleusframework.yarucompose.widgets.YaruTitleBar
 
 /**
  * Mirrors `yaru.dart/example/lib/pages/tab_bar_page.dart`.
  *
  * Dart layout:
- *  - The page background is `theme.colorScheme.outline` (`ColoredBox`).
- *  - A centered `SimpleDialog` whose `title` is a `YaruDialogTitleBar` with:
- *      • leading: a centered `YaruOptionButton` with a plus icon
- *      • title: `SizedBox(width: 500, child: YaruTabBar(... 3 tabs))`
- *  - The dialog body is a 600x400 `TabBarView` rendering the matching icon
- *    plain (Dart does not specify a size, so the icons render at their
- *    default `kDefaultFontSize` ≈ 24).
+ *  - Page background: `theme.colorScheme.outline`.
+ *  - Centered `SimpleDialog` (`titlePadding: EdgeInsets.zero`) with:
+ *      • title: `YaruDialogTitleBar` containing the option button + 500 dp tab bar
+ *      • children: `SizedBox(width: 600, height: 400, child: TabBarView)`
  *
- * No commonMain `SimpleDialog`, so we use `YaruBorderContainer` as the shell.
+ * Material `SimpleDialog` defaults applied here:
+ *  - `contentPadding`: `EdgeInsets.fromLTRB(0, 12, 0, 16)` around the children.
+ *  - Surface chrome (`_createDialogTheme`, common_themes.dart:318-330):
+ *    14 dp window radius, `_createMenuBg` background, dark/HC border,
+ *    Material `_DialogDefaultsM3.elevation = 6`. All provided by [YaruDialogSurface].
+ *  - The dialog has no max width by default in Flutter, so we pass
+ *    `maxWidth = null` to let the 600 dp body size the dialog.
  */
 @Composable
 fun TabBarPage() {
@@ -47,21 +51,15 @@ fun TabBarPage() {
             .background(LocalYaruColorScheme.current.outline),
         contentAlignment = Alignment.Center,
     ) {
-        // `clipContent = true`: the inner `YaruTitleBar` fills its bounds with a
-        // solid surface color whose square corners would otherwise show past the
-        // rounded border (Dart's `SimpleDialog` clips via `Material(clip: antiAlias)`).
-        YaruBorderContainer(clipContent = true) {
+        YaruDialogSurface(maxWidth = null) {
             Column {
-                // `YaruDialogTitleBar` (Dart) defaults `isClosable = true` and
-                // `onClose = Navigator.maybePop` — see yaru_title_bar.dart:671.
-                // We mirror by enabling the close button with a no-op handler.
-                YaruTitleBar(
-                    centerTitle = true,
+                // tab_bar_page.dart:37-61: `YaruDialogTitleBar` with `titlePadding: EdgeInsets.zero`
+                // — the title bar fills the top edge-to-edge.
+                YaruDialogTitleBar(
                     isClosable = true,
                     onClose = {},
                     leading = {
-                        // `Center(child: YaruOptionButton(onPressed: () {}, child: Icon(plus)))`
-                        // (tab_bar_page.dart:38-43).
+                        // `Center(child: YaruOptionButton(child: Icon(plus)))` (lines 38-43).
                         Box(contentAlignment = Alignment.Center) {
                             YaruOptionButton(onPressed = {}) {
                                 YaruIcon(YaruIcons.plus)
@@ -69,7 +67,7 @@ fun TabBarPage() {
                         }
                     },
                     title = {
-                        // `SizedBox(width: 500, child: YaruTabBar(...))` (tab_bar_page.dart:44-59).
+                        // `SizedBox(width: 500, child: YaruTabBar(...))` (lines 44-59).
                         Box(modifier = Modifier.width(500.dp)) {
                             YaruTabBar(
                                 selectedTabIndex = selected,
@@ -83,16 +81,21 @@ fun TabBarPage() {
                         }
                     },
                 )
-                // `SizedBox(width: 600, height: 400, child: TabBarView(children: [Icon, Icon, Icon]))`
-                // (tab_bar_page.dart:63-74).
+                // `SizedBox(width: 600, height: 400, child: TabBarView(...))` (lines 63-74),
+                // wrapped in `SimpleDialog`'s default `contentPadding` of
+                // `EdgeInsets.fromLTRB(0, 12, 0, 16)` (material/dialog.dart).
                 Box(
-                    modifier = Modifier.size(width = 600.dp, height = 400.dp),
-                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.padding(top = 12.dp, bottom = 16.dp),
                 ) {
-                    when (selected) {
-                        0 -> YaruIcon(YaruIcons.game_controller)
-                        1 -> YaruIcon(YaruIcons.keyboard)
-                        else -> YaruIcon(YaruIcons.address_book)
+                    Box(
+                        modifier = Modifier.size(width = 600.dp, height = 400.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        when (selected) {
+                            0 -> YaruIcon(YaruIcons.game_controller)
+                            1 -> YaruIcon(YaruIcons.keyboard)
+                            else -> YaruIcon(YaruIcons.address_book)
+                        }
                     }
                 }
             }
