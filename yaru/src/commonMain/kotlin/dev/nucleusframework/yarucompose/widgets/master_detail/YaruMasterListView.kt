@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.nucleusframework.yarucompose.widgets.YaruScrollViewUndershoot
+import dev.nucleusframework.yarucompose.widgets.YaruScrollbar
 
 /**
  * The vertical list of master tiles inside `YaruMasterDetailPage`.
@@ -49,13 +50,19 @@ fun YaruMasterListView(
         showStart = startUndershoot,
         showEnd = endUndershoot,
     ) {
-        LazyColumn(
-            state = state,
-            contentPadding = PaddingValues(vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-        ) {
-            // Defensive: `LazyListScope.items(count)` throws when count < 0.
-            items(count = length.coerceAtLeast(0)) { index -> tile(index) }
+        // Mirrors Flutter's `MaterialScrollBehavior` adding a `Scrollbar`
+        // around scrollables on desktop/web — Yaru's
+        // `ScrollbarThemeData` (common_themes.dart:783-793) supplies the
+        // 4dp/8dp thickness map that `YaruScrollbar` reproduces here.
+        YaruScrollbar(state = state) {
+            LazyColumn(
+                state = state,
+                contentPadding = PaddingValues(vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                // Defensive: `LazyListScope.items(count)` throws when count < 0.
+                items(count = length.coerceAtLeast(0)) { index -> tile(index) }
+            }
         }
     }
 }
