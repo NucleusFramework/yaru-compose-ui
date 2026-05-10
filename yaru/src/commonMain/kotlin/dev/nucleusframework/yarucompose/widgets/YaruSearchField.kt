@@ -10,10 +10,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -295,18 +297,134 @@ fun YaruSearchButton(
         // defaults to `kYaruIconSize = 20`. Only the *glyph* is shrunk to
         // `kYaruIconSize - 4 = 16` (line 409, 417).
         // Mirrors Dart `YaruSearchButton.icon` / `selectedIcon` (yaru_search_field.dart:411-418): callers may replace the default search glyph (e.g. for a "filter" or "advanced" search button).
+        // CRITICAL: Dart explicitly passes `color: theme.colorScheme.onSurface`
+        // on both `Icon`s (lines 410 and 418), bypassing the YaruIconButton
+        // selected-foreground (`primary`) so the magnifier stays the neutral
+        // onSurface tint regardless of `searchActive`. Without this explicit
+        // tint, our YaruIcon would inherit `LocalYaruContentColor` which the
+        // YaruIconButton overrides to `primary` when selected — turning the
+        // magnifier accent-orange, which Dart never does.
         val defaultGlyph: @Composable () -> Unit = {
-            YaruIcon(glyph = YaruIcons.search, size = YaruConstants.IconSize - 4.dp)
+            YaruIcon(
+                glyph = YaruIcons.search,
+                size = YaruConstants.IconSize - 4.dp,
+                tint = scheme.onSurface,
+            )
         }
         YaruIconButton(
             onPressed = onPressed,
             iconSize = YaruConstants.IconSize,
+            // Pin the YaruIconButton's outer state-layer to the search-button
+            // pill size (34 dp by default). Without this, [YaruIconButton]
+            // would default `minimumSize = 40` (M3 default for IconButton)
+            // and the Modifier.size clamp from the outer Box would visually
+            // shrink the state-layer to 34 — but the icon centring math
+            // still uses the 40 dp box, so the glyph drifts off-centre.
+            minimumSize = safeSize,
             isSelected = isSelected,
             shape = shape,
             // Defensive: forward `semanticLabel` (was previously suppressed) so the search glyph carries an accessible name for screen readers.
             semanticLabel = semanticLabel,
             icon = icon ?: defaultGlyph,
             selectedIcon = selectedIcon,
+        )
+    }
+}
+
+/**
+ * A composite that stacks a [YaruSearchButton] (always visible on the leading
+ * edge) over either a [title] widget or an inline [YaruSearchField] — toggled
+ * by [searchActive].
+ *
+ * Mirrors `YaruSearchTitleField` from
+ * `yaru.dart/lib/src/widgets/yaru_search_field.dart:220-346`. Used in the
+ * search-field example to embed a collapsible search input directly in a
+ * `YaruDialogTitleBar` without the need for a separate leading slot.
+ *
+ * Geometry from the Dart constructor:
+ *  - default `width = 190` dp
+ *  - default `radius = Radius.circular(kYaruTitleBarItemHeight)` → fully rounded ends
+ *  - title is padded `EdgeInsets.only(left: 45)` (room for the search button)
+ *  - the embedded `YaruSearchField` uses `contentPadding: (10, 45, 10, 15)`
+ *    so its text doesn't slide under the search button
+ */
+@Composable
+fun YaruSearchTitleField(
+    searchActive: Boolean,
+    onSearchActive: () -> Unit,
+    title: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    width: Dp = 190.dp,
+    titlePaddingStart: Dp = 45.dp,
+    autoFocus: Boolean = true,
+    text: String = "",
+    onValueChange: ((String) -> Unit)? = null,
+    onSubmitted: ((String) -> Unit)? = null,
+    onClear: (() -> Unit)? = null,
+    placeholder: String? = null,
+    height: Dp = YaruConstants.TitleBarItemHeight,
+    radius: Dp = height,
+    style: YaruSearchFieldStyle = YaruSearchFieldStyle.Filled,
+    searchIcon: (@Composable () -> Unit)? = null,
+    clearIcon: (@Composable () -> Unit)? = null,
+) {
+    val safeWidth = width.sanitise()
+    val safeHeight = height.sanitise()
+    val safeRadius = radius.sanitise()
+    val shape = RoundedCornerShape(safeRadius)
+
+    // `ClipRRect(borderRadius: BorderRadius.all(radius))`
+    // (yaru_search_field.dart:291-293) — the pill clips the embedded
+    // search field's filled background to the same rounded ends.
+    Box(
+        modifier = modifier
+            .width(safeWidth)
+            .height(safeHeight)
+            .clip(shape),
+        contentAlignment = Alignment.CenterStart,
+    ) {
+        // `Stack(alignment: centerLeft)` (yaru_search_field.dart:294-340).
+        if (searchActive) {
+            // `YaruSearchField` with `contentPadding: (10, 45, 10, 15)` so the
+            // text starts past the search button and the clear icon sits on
+            // the trailing edge (yaru_search_field.dart:298-321).
+            YaruSearchField(
+                value = text,
+                onValueChange = { onValueChange?.invoke(it) },
+                onSubmitted = onSubmitted,
+                onClear = onClear,
+                placeholder = placeholder,
+                height = safeHeight,
+                radius = safeRadius,
+                contentPadding = PaddingValues(start = 45.dp, end = 15.dp, top = 10.dp, bottom = 10.dp),
+                style = style,
+                autoFocus = autoFocus,
+                clearIcon = clearIcon,
+                modifier = Modifier.width(safeWidth),
+            )
+        } else {
+            // `Padding(padding: titlePadding, child: Align(alignment, child: title))`
+            // (yaru_search_field.dart:323-327).
+            Box(
+                modifier = Modifier
+                    .padding(start = titlePaddingStart)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.CenterStart,
+            ) { title() }
+        }
+        // The leading search button is painted on top of either branch so the
+        // user can collapse the field even while it's focused
+        // (yaru_search_field.dart:328-340).
+        YaruSearchButton(
+            onPressed = onSearchActive,
+            isSelected = searchActive,
+            size = safeHeight,
+            radius = safeRadius,
+            // Filled stays filled; Outlined keeps the outline state, mirroring
+            // the explicit ternary on line 331-333.
+            style = if (style == YaruSearchFieldStyle.Outlined) style else YaruSearchFieldStyle.Filled,
+            icon = searchIcon,
+            selectedIcon = searchIcon,
         )
     }
 }
