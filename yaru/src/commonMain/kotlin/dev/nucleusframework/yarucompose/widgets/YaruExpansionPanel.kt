@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -108,7 +109,12 @@ fun YaruExpansionPanel(
         border = safeBorder,
     ) {
         val innerModifier = if (safePadding != null) Modifier.padding(safePadding) else Modifier
-        LazyColumn(modifier = innerModifier) {
+        // Mirrors Flutter's `Scrollbar` wrapper around the inner `ListView`
+        // (yaru_expansion_panel.dart). Yaru's `ScrollbarThemeData`
+        // (common_themes.dart:783-793) is reproduced by `YaruScrollbar`.
+        val listState = rememberLazyListState()
+        YaruScrollbar(state = listState) {
+            LazyColumn(state = listState, modifier = innerModifier) {
             items(count = itemCount) { index ->
                 // Defensive: although `itemCount` is the snapshot intersection of
                 // `headers.size` and `contents.size`, both lists may be mutated
@@ -165,6 +171,7 @@ fun YaruExpansionPanel(
                     YaruHorizontalDivider()
                     Spacer(modifier = Modifier.height(1.dp))
                 }
+            }
             }
         }
     }

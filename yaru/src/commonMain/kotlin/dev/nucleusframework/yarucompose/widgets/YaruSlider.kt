@@ -201,7 +201,7 @@ fun YaruSlider(
                     Key.DirectionUp -> { nudge(+arrowStep); true }
                     Key.PageDown -> { nudge(-pageStep); true }
                     Key.PageUp -> { nudge(+pageStep); true }
-                    Key.MoveHome, Key.Home -> {
+                    Key.MoveHome -> {
                         if (safeValue != rangeStart) onValueChange(rangeStart)
                         true
                     }

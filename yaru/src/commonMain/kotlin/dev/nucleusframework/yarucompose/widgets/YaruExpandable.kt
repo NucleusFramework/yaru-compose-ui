@@ -1,14 +1,13 @@
 package dev.nucleusframework.yarucompose.widgets
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.layout.Layout
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -197,40 +196,27 @@ fun YaruExpandable(
                 }
             }
         }
-        // `AnimatedCrossFade` between `child` (firstChild) and
-        // `collapsedChild ?? Container()` (secondChild). Defaults from Flutter:
+        // Mirrors Flutter's `AnimatedCrossFade`: both children are composed and
+        // stacked at the same time; one fades out while the other fades in, and
+        // the container height interpolates between their measured heights.
+        // Defaults from `yaru_expandable.dart`:
         //   firstCurve / secondCurve = Curves.linear
-        //   sizeCurve = `_kAnimationCurve` (Curves.easeInOutCubic)
-        //   duration = `_kAnimationDuration` (250 ms)
-        // from yaru_expandable.dart.
-        AnimatedContent(
-            targetState = isExpandedState,
-            transitionSpec = {
-                // Mirrors Flutter's `AnimatedCrossFade`: a synchronized linear
-                // cross-fade with a separately-curved size animation.
-                // `AnimatedCrossFade.clipBehavior` defaults to `Clip.hardEdge`,
-                // so the in-flight content is clipped to the animating size
-                // (otherwise the expanding child paints past the row before
-                // the size catches up — this was the source of the perceived
-                // "different animation" in the sample).
-                (fadeIn(animationSpec = tween(AnimationDurationMs, easing = LinearEasing)) togetherWith
-                    fadeOut(animationSpec = tween(AnimationDurationMs, easing = LinearEasing))).using(
-                    SizeTransform(clip = true) { _, _ ->
-                        tween(AnimationDurationMs, easing = YaruEasing.EaseInOutCubic)
-                    },
-                )
-            },
-            label = "YaruExpandable",
-        ) { isOpen ->
-            if (isOpen) {
+        //   sizeCurve = Curves.easeInOutCubic
+        //   duration = 250 ms
+        AnimatedCrossFade(
+            showFirst = isExpandedState,
+            firstChild = {
                 BodyChild(gapHeight = gapHeight, usePadding = usePadding, child = content)
-            } else if (collapsedContent != null) {
-                BodyChild(gapHeight = gapHeight, usePadding = usePadding, child = collapsedContent)
-            } else {
-                // Empty branch — matches Flutter's `Container()` secondChild.
-                Spacer(Modifier.height(0.dp))
-            }
-        }
+            },
+            secondChild = {
+                if (collapsedContent != null) {
+                    BodyChild(gapHeight = gapHeight, usePadding = usePadding, child = collapsedContent)
+                }
+                // else: empty — matches Flutter's `Container()` secondChild.
+            },
+            durationMillis = AnimationDurationMs,
+            sizeEasing = YaruEasing.EaseInOutCubic,
+        )
     }
 }
 
@@ -259,6 +245,59 @@ private fun BodyChild(
         Column {
             Spacer(Modifier.height(safeGap))
             child()
+        }
+    }
+}
+
+/**
+ * Compose port of Flutter's `AnimatedCrossFade`. Composes both children at all
+ * times, stacks them, fades [firstChild] in/out linearly against [secondChild],
+ * and animates the container's height between their measured heights using
+ * [sizeEasing]. Output is clipped to the animating bounds so the in-flight
+ * content does not paint outside the interpolated size.
+ */
+@Composable
+private fun AnimatedCrossFade(
+    showFirst: Boolean,
+    firstChild: @Composable () -> Unit,
+    secondChild: @Composable () -> Unit,
+    durationMillis: Int,
+    sizeEasing: Easing,
+) {
+    val fadeProgress by animateFloatAsState(
+        targetValue = if (showFirst) 1f else 0f,
+        animationSpec = tween(durationMillis, easing = LinearEasing),
+        label = "YaruExpandable.fade",
+    )
+    val sizeProgress by animateFloatAsState(
+        targetValue = if (showFirst) 1f else 0f,
+        animationSpec = tween(durationMillis, easing = sizeEasing),
+        label = "YaruExpandable.size",
+    )
+
+    Layout(
+        modifier = Modifier.clipToBounds(),
+        content = {
+            Box(modifier = Modifier.alpha(fadeProgress)) { firstChild() }
+            Box(modifier = Modifier.alpha(1f - fadeProgress)) { secondChild() }
+        },
+    ) { measurables, constraints ->
+        val childConstraints = constraints.copy(minHeight = 0)
+        val firstPlaceable = measurables[0].measure(childConstraints)
+        val secondPlaceable = measurables[1].measure(childConstraints)
+
+        val width = maxOf(firstPlaceable.width, secondPlaceable.width)
+            .coerceIn(constraints.minWidth, constraints.maxWidth)
+        val interpolated = secondPlaceable.height +
+            ((firstPlaceable.height - secondPlaceable.height) * sizeProgress).toInt()
+        val height = interpolated.coerceIn(constraints.minHeight, constraints.maxHeight)
+
+        layout(width, height) {
+            // Flutter's defaultLayoutBuilder centers the top child; for an
+            // expand/collapse this matters only when the two children differ
+            // in width — top-align matches the visual we want here.
+            firstPlaceable.place(0, 0)
+            secondPlaceable.place(0, 0)
         }
     }
 }

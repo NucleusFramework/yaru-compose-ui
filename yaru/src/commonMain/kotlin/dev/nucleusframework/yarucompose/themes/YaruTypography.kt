@@ -36,7 +36,18 @@ data class YaruTypography(
     val labelSmall: TextStyle,
 )
 
-/** Build a [YaruTypography] using the Ubuntu font family + a foreground color. */
+/**
+ * Build a [YaruTypography] using the Ubuntu font family.
+ *
+ * [textColor] is intentionally ignored when constructing the [TextStyle]s — the
+ * foreground colour is driven by [LocalYaruContentColor] (and, for Material3
+ * widgets sharing this typography, by `LocalContentColor`). Baking a colour
+ * into the style would override those locals, so e.g. a Material3 `Badge`
+ * setting `LocalContentColor = onError` would still render its label in
+ * `onSurface` because `Text` reads `style.color` first. The parameter is kept
+ * for source compatibility with previous callers.
+ */
+@Suppress("UNUSED_PARAMETER")
 fun yaruTypography(
     textColor: Color,
     fontFamily: FontFamily = FontFamily.Default,
@@ -45,7 +56,6 @@ fun yaruTypography(
         fontFamily = fontFamily,
         fontSize = size.sp,
         fontWeight = weight,
-        color = textColor,
         letterSpacing = 0.sp,
     )
     return YaruTypography(
