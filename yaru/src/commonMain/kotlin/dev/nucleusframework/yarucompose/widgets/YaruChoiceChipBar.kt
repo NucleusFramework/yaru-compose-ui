@@ -520,9 +520,15 @@ private fun ChoiceChip(
     }
 
     if (onClick != null) {
+        // Mirrors Dart `YaruFocusBorder.primary(borderStrokeAlign: BorderSide.strokeAlignInside, ...)`
+        // from yaru_choice_chip_bar.dart line 193 — drawing the ring INSIDE the
+        // chip bounds. Without `-1f` here, the default `strokeAlign = 3` reserves
+        // 8dp of outer layout space, squeezing the chip from `chipHeight` (34dp)
+        // down to 26dp inside its parent `Row.height(chipHeight)` lane.
         YaruFocusBorder(
             focused = focused,
             borderShape = shape,
+            borderStrokeAlign = -1f,
         ) { chip() }
     } else {
         chip()
@@ -585,7 +591,14 @@ private fun NavigationButton(
     }
 
     if (enabled) {
-        YaruFocusBorder(focused = focused, borderShape = CircleShape) { button() }
+        // Draw focus ring inside the button's bounds so it doesn't reserve outer
+        // layout space (see ChoiceChip note above for the same `strokeAlign = -1`
+        // rationale).
+        YaruFocusBorder(
+            focused = focused,
+            borderShape = CircleShape,
+            borderStrokeAlign = -1f,
+        ) { button() }
     } else {
         button()
     }
