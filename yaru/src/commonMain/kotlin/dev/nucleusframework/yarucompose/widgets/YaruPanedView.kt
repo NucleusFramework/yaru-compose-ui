@@ -30,8 +30,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import dev.nucleusframework.yarucompose.foundation.ResizeColumnPointerIcon
+import dev.nucleusframework.yarucompose.foundation.ResizeRowPointerIcon
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
@@ -306,14 +307,9 @@ fun YaruPanedView(
 
 /**
  * Invisible-by-default 4dp region pinned to a page edge. Highlights with the
- * divider color when hovered or dragged, and exposes a pointer icon to signal
- * interactivity. Consumes vertical/horizontal drag deltas in dp.
- *
- * Cursor note: Dart uses `SystemMouseCursors.resizeColumn` / `resizeRow` based
- * on the pane axis. Compose Multiplatform's [PointerIcon] only ships the
- * `Default`, `Crosshair`, `Text` and `Hand` presets, so we fall back to
- * `PointerIcon.Hand` for both axes — the closest "interactive" affordance
- * available without dropping to a platform-specific icon.
+ * divider color when hovered or dragged, and exposes the platform's native
+ * resize cursor (`SystemMouseCursors.resizeColumn` / `resizeRow` in Flutter
+ * terms). Consumes vertical/horizontal drag deltas in dp.
  */
 @Composable
 private fun BoxScope.ResizeHandle(
@@ -353,7 +349,9 @@ private fun BoxScope.ResizeHandle(
                 else Modifier.fillMaxHeight().width(ResizingRegionSize),
             )
             .background(color)
-            .pointerHoverIcon(PointerIcon.Hand)
+            // Horizontal sash on a vertical pane → drag left/right → column
+            // resize cursor; horizontal sash → up/down → row resize cursor.
+            .pointerHoverIcon(if (isVertical) ResizeRowPointerIcon else ResizeColumnPointerIcon)
             .hoverable(interactionSource)
             .pointerInput(Unit) {
                 detectDragGestures(

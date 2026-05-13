@@ -1,7 +1,7 @@
 package dev.nucleusframework.yarucompose.material3.themepage.controls
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowColumn
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
@@ -27,15 +27,23 @@ import dev.nucleusframework.yarucompose.icons.YaruIcon
 import dev.nucleusframework.yarucompose.icons.YaruIcons
 import dev.nucleusframework.yarucompose.material3.themepage.WrapSpacing
 
-/** Mirrors `yaru.dart/example/lib/pages/theme_page/src/controls/buttons.dart`. */
+/**
+ * Mirrors `yaru.dart/example/lib/pages/theme_page/src/controls/buttons.dart`.
+ *
+ * Flutter wraps each (enabled, disabled) pair in a horizontal `Wrap`, then
+ * nests them all inside an outer `Wrap(direction: Axis.vertical)` — so the
+ * pairs flow top-to-bottom and overflow into additional columns when the
+ * pane is short. Compose equivalent: `FlowColumn` of `FlowRow`s.
+ */
 @Composable
 fun Buttons(modifier: Modifier = Modifier) {
     var selected by remember { mutableStateOf(false) }
     val icon: @Composable () -> Unit = { YaruIcon(YaruIcons.notification_filled) }
 
-    Column(
+    FlowColumn(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(WrapSpacing.dp),
+        horizontalArrangement = Arrangement.spacedBy(WrapSpacing.dp),
     ) {
         ButtonRow(
             { TextButton(onClick = {}) { Text("Text") } },

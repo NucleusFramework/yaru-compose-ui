@@ -1,9 +1,11 @@
 package dev.nucleusframework.yarucompose.material3
 
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import dev.nucleusframework.yarucompose.themes.LocalYaruColorScheme
 import dev.nucleusframework.yarucompose.themes.LocalYaruTypography
@@ -31,8 +33,17 @@ fun YaruMaterialTheme(content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = materialScheme,
         typography = materialTypography,
-        content = content,
-    )
+    ) {
+        // `MaterialTheme` does NOT seed `LocalContentColor` — only Material3's
+        // `Surface` does (via `contentColorFor`). Without wrapping every page
+        // in a Surface, Material3 `Text` falls back to the local's default
+        // `Color.Black`, producing unreadable text on the dark scheme. Seed
+        // it from the mapped `onSurface` so widgets that don't sit inside a
+        // Surface inherit the correct foreground.
+        CompositionLocalProvider(LocalContentColor provides materialScheme.onSurface) {
+            content()
+        }
+    }
 }
 
 /** Mechanical 1-to-1 mapping; field names match the Material spec. */

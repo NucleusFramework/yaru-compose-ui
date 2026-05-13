@@ -2,9 +2,9 @@ package dev.nucleusframework.yarucompose.material3.themepage.controls
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,7 +27,7 @@ fun ControlsView(
     val scope = rememberCoroutineScope()
 
     Column(modifier = modifier) {
-        TabRow(selectedTabIndex = selected) {
+        PrimaryTabRow(selectedTabIndex = selected) {
             tabs.forEachIndexed { index, label ->
                 Tab(
                     selected = index == selected,

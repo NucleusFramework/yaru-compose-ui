@@ -139,28 +139,25 @@ fun ContainersView(modifier: Modifier = Modifier) {
         item { HorizontalDivider(modifier = Modifier.padding(vertical = 20.dp)) }
         if (inDialog) {
             // Flutter renders `SimpleDialog` INLINE here (not via `showDialog`),
-            // so it's not modal — it's a Material-styled card. Reproduce with a
-            // `Surface` using the AlertDialog defaults.
+            // so it's not modal — it's a Material-styled card. Reproduce with
+            // a `Surface` using the AlertDialog defaults. `SimpleDialog` wraps
+            // its `children` in a `ListBody` which stacks them with no gap
+            // (only its `contentPadding` of 20 wraps the whole stack).
             item {
                 Surface(
                     shape = AlertDialogDefaults.shape,
                     color = AlertDialogDefaults.containerColor,
                     tonalElevation = AlertDialogDefaults.TonalElevation,
                 ) {
-                    Column(
-                        modifier = Modifier.padding(WrapSpacing.dp),
-                        verticalArrangement = Arrangement.spacedBy(WrapSpacing.dp),
-                    ) {
+                    Column(modifier = Modifier.padding(WrapSpacing.dp)) {
                         children()
                     }
                 }
             }
         } else {
-            item {
-                Column(verticalArrangement = Arrangement.spacedBy(WrapSpacing.dp)) {
-                    children()
-                }
-            }
+            // `...children` spreads them directly into the outer ListView, no
+            // injected gap — replicate by inlining without `spacedBy`.
+            item { Column { children() } }
         }
     }
 }

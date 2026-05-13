@@ -1,6 +1,5 @@
 package dev.nucleusframework.yarucompose.material3.themepage
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,11 +13,11 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.TextStyle
@@ -85,23 +84,34 @@ private fun androidx.compose.foundation.lazy.grid.LazyGridScope.items(
 @Composable
 private fun ColorSwatch(name: String, background: Color, foreground: Color?) {
     val resolvedFg = foreground ?: localContrastColor(background)
-    Box(
+    // Flutter applies a soft black drop shadow to every swatch (Container
+    // BoxShadow at offset (0,1), spread 1, blur 2, color black @ 0.1).
+    // Compose's Surface shadow takes elevation; 1dp ≈ matching look.
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .height(40.dp)
-            .clip(RoundedCornerShape(6.dp))
-            .background(background),
-        contentAlignment = Alignment.Center,
+            .height(40.dp),
+        shape = RoundedCornerShape(6.dp),
+        color = background,
+        shadowElevation = 1.dp,
+        tonalElevation = 0.dp,
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(name, style = TextStyle(color = resolvedFg, fontSize = 11.sp))
-            Text(background.toHexString(), style = TextStyle(color = resolvedFg, fontSize = 8.sp))
+        Box(contentAlignment = Alignment.Center) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(name, style = TextStyle(color = resolvedFg, fontSize = 11.sp))
+                Text(background.toHexString(), style = TextStyle(color = resolvedFg, fontSize = 8.sp))
+            }
         }
     }
 }
 
-private fun localContrastColor(background: Color): Color =
-    if (background.luminance() > 0.5f) Color.Black else Color.White
+private fun localContrastColor(background: Color): Color {
+    // Mirrors `contrastColor` from yaru.dart (common_themes.dart:504) —
+    // (relativeLuminance + 0.05)^2 > 0.15 ⇒ background is light ⇒ black text.
+    val l = background.luminance().coerceIn(0f, 1f)
+    val v = (l + 0.05f) * (l + 0.05f)
+    return if (v > 0.15f) Color.Black else Color.White
+}
 
 private fun Color.toHexString(): String {
     val a = (alpha * 255).toInt().toString(16).padStart(2, '0')
