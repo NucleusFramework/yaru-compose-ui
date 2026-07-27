@@ -35,6 +35,8 @@ import dev.nucleusframework.yarucompose.themes.LocalYaruColorScheme
 import dev.nucleusframework.yarucompose.themes.YaruConstants
 import dev.nucleusframework.yarucompose.themes.YaruTheme
 import dev.nucleusframework.yarucompose.themes.YaruVariant
+import dev.nucleusframework.yarucompose.themes.yaruSystemAccentVariant
+import dev.nucleusframework.yarucompose.themes.yaruSystemInDarkMode
 import dev.nucleusframework.yarucompose.themes.isHighContrast
 import dev.nucleusframework.yarucompose.themes.isLight
 import dev.nucleusframework.yarucompose.themes.scale
@@ -333,14 +335,20 @@ private class ExampleSettings(
 )
 
 @Composable
-private fun rememberExampleSettings(): ExampleSettings = remember {
-    ExampleSettings(
-        themeMode = mutableStateOf(ThemeModeChoice.System),
-        variant = mutableStateOf(YaruVariant.Orange),
-        highContrast = mutableStateOf(false),
-        compactMode = mutableStateOf(false),
-        rtl = mutableStateOf(false),
-    )
+private fun rememberExampleSettings(): ExampleSettings {
+    // Follow the desktop accent by default, like GNOME's own apps; Orange is
+    // Ubuntu's fallback where the platform exposes no accent. The picker below
+    // still overrides it.
+    val systemVariant = yaruSystemAccentVariant()
+    return remember(systemVariant) {
+        ExampleSettings(
+            themeMode = mutableStateOf(ThemeModeChoice.System),
+            variant = mutableStateOf(systemVariant ?: YaruVariant.Orange),
+            highContrast = mutableStateOf(false),
+            compactMode = mutableStateOf(false),
+            rtl = mutableStateOf(false),
+        )
+    }
 }
 
 @Composable
@@ -353,10 +361,10 @@ fun App() {
     setUpCoilForKtor()
     val settings = rememberExampleSettings()
     // Mirrors Dart `ThemeMode.system` resolving against platform brightness
-    // via `MediaQuery.platformBrightness` (example.dart:19-25). Compose
-    // Multiplatform exposes the equivalent through `isSystemInDarkTheme()`
-    // on every supported host (Android, JVM/desktop, iOS, Web).
-    val systemDark = androidx.compose.foundation.isSystemInDarkTheme()
+    // via `MediaQuery.platformBrightness` (example.dart:19-25). Compose's own
+    // `isSystemInDarkTheme()` is blind to the desktop setting, so this goes
+    // through Yaru, which reads it natively there.
+    val systemDark = yaruSystemInDarkMode()
     val isDark = when (settings.themeMode.value) {
         ThemeModeChoice.System -> systemDark
         ThemeModeChoice.Light -> false

@@ -46,6 +46,9 @@ kotlin {
             // integration (drag, controls, theme sync) lives in jvmMain.
             api(libs.nucleus.decorated.window.tao)
             api(libs.nucleus.application)
+            // System theme: OS dark mode and accent color, read natively.
+            implementation(libs.nucleus.darkmode.detector)
+            implementation(libs.nucleus.system.color)
         }
 
     }
