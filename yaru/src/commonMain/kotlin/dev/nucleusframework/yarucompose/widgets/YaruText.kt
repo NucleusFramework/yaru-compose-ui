@@ -16,6 +16,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import dev.nucleusframework.yarucompose.themes.LocalYaruContentColor
+import dev.nucleusframework.yarucompose.themes.LocalYaruTextMaxLines
+import dev.nucleusframework.yarucompose.themes.LocalYaruTextOverflow
+import dev.nucleusframework.yarucompose.themes.LocalYaruTextSoftWrap
 import dev.nucleusframework.yarucompose.themes.LocalYaruTextStyle
 
 /**
@@ -42,9 +45,9 @@ fun YaruText(
     textDecoration: TextDecoration? = null,
     textAlign: TextAlign? = null,
     lineHeight: TextUnit = TextUnit.Unspecified,
-    overflow: TextOverflow = TextOverflow.Clip,
-    softWrap: Boolean = true,
-    maxLines: Int = Int.MAX_VALUE,
+    overflow: TextOverflow = LocalYaruTextOverflow.current,
+    softWrap: Boolean = LocalYaruTextSoftWrap.current,
+    maxLines: Int = LocalYaruTextMaxLines.current,
     minLines: Int = 1,
     style: TextStyle = LocalYaruTextStyle.current,
 ) {
@@ -109,9 +112,9 @@ fun YaruText(
     text: AnnotatedString,
     modifier: Modifier = Modifier,
     color: Color = Color.Unspecified,
-    overflow: TextOverflow = TextOverflow.Clip,
-    softWrap: Boolean = true,
-    maxLines: Int = Int.MAX_VALUE,
+    overflow: TextOverflow = LocalYaruTextOverflow.current,
+    softWrap: Boolean = LocalYaruTextSoftWrap.current,
+    maxLines: Int = LocalYaruTextMaxLines.current,
     minLines: Int = 1,
     style: TextStyle = LocalYaruTextStyle.current,
 ) {

@@ -2,6 +2,9 @@ rootProject.name = "YaruCompose"
 
 pluginManagement {
     repositories {
+        // Nucleus is consumed from a local publish while the window work is
+        // unreleased (see `nucleus` in the version catalog).
+        mavenLocal { content { includeGroupByRegex("dev\\.nucleusframework.*") } }
         google {
             content { 
               	includeGroupByRegex("com\\.android.*")
@@ -17,6 +20,7 @@ pluginManagement {
 
 dependencyResolutionManagement {
     repositories {
+        mavenLocal { content { includeGroupByRegex("dev\\.nucleusframework.*") } }
         google {
             content { 
               	includeGroupByRegex("com\\.android.*")

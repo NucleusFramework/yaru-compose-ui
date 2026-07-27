@@ -3,7 +3,9 @@ package dev.nucleusframework.yarucompose.themes
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import dev.nucleusframework.yarucompose.window.LocalNativeWindowSync
 
 /**
  * Top-level Yaru theme — Foundation-only entry point.
@@ -32,6 +34,15 @@ fun YaruTheme(
         YaruIndication(yaruScheme.onSurfaceVariant)
     }
     val dividerColor = remember(yaruScheme) { yaruDividerColorOf(yaruScheme) }
+
+    // Let the windowing layer follow the theme: the window background is what
+    // shows in any region Compose has not painted (most visibly while
+    // resizing), and on macOS the native surfaces pick their light/dark
+    // appearance from it. No-op without a window layer.
+    val nativeWindowSync = LocalNativeWindowSync.current
+    LaunchedEffect(nativeWindowSync, isDark, yaruScheme.surface) {
+        nativeWindowSync?.invoke(isDark, yaruScheme.surface)
+    }
 
     CompositionLocalProvider(
         LocalIndication provides indication,

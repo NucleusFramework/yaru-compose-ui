@@ -28,8 +28,23 @@ import dev.nucleusframework.yarucompose.foundation.coerceNonNegative
 import dev.nucleusframework.yarucompose.foundation.sanitise
 import dev.nucleusframework.yarucompose.foundation.sanitiseColor
 import dev.nucleusframework.yarucompose.themes.LocalYaruColorScheme
+import androidx.compose.ui.text.style.TextOverflow
+import dev.nucleusframework.yarucompose.themes.LocalYaruTextMaxLines
+import dev.nucleusframework.yarucompose.themes.LocalYaruTextOverflow
+import dev.nucleusframework.yarucompose.themes.LocalYaruTextSoftWrap
 import dev.nucleusframework.yarucompose.themes.LocalYaruTextStyle
 import dev.nucleusframework.yarucompose.themes.LocalYaruTypography
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.layout.findRootCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.unit.LayoutDirection
+import dev.nucleusframework.yarucompose.window.LocalWindowControls
+import dev.nucleusframework.yarucompose.window.LocalWindowControlsLeadingInset
+import dev.nucleusframework.yarucompose.window.LocalWindowDragAreaModifier
 import dev.nucleusframework.yarucompose.themes.YaruConstants
 import dev.nucleusframework.yarucompose.themes.isHighContrast
 import dev.nucleusframework.yarucompose.themes.isLight
@@ -53,6 +68,8 @@ enum class YaruTitleBarStyle { Hidden, Undecorated, Normal }
  * defaults to [YaruWindowControlPlatform.Yaru] but can be overridden — host apps
  * pick the macOS / Windows variant per their environment.
  */
+private const val EDGE_TOLERANCE_PX = 1f
+
 @Composable
 fun YaruTitleBar(
     modifier: Modifier = Modifier,
@@ -109,8 +126,13 @@ fun YaruTitleBar(
     // the Dart code which omits the bottom border for `undecorated` / `hidden`.
     val drawBorder = showBorder && style == YaruTitleBarStyle.Normal
 
+    // A windowing layer (Nucleus' `YaruDecoratedWindow`) owns which controls
+    // exist, their order and their side; it hands them over through
+    // [LocalWindowControls] and the Yaru artwork is used to draw them. Without
+    // one, fall back to the callback-driven row below.
+    val hostControls = LocalWindowControls.current
     val showWindowControls = style == YaruTitleBarStyle.Normal &&
-        (isClosable || isMaximizable || isMinimizable || isRestorable)
+        (hostControls != null || isClosable || isMaximizable || isMinimizable || isRestorable)
 
     // Title text style — `titleLarge.copy(fontSize = 14.sp, fontWeight = W500)`
     // matches `theme.textTheme.titleLarge.copyWith(fontSize: 14, fontWeight: w500)`
@@ -121,11 +143,41 @@ fun YaruTitleBar(
         fontWeight = FontWeight.W500,
     )
 
+    // Systems that draw their own controls over the client area (the macOS
+    // traffic-lights) only cover the window's leading corner, so only a bar
+    // sitting there must keep their footprint clear — a GNOME master/detail
+    // layout puts a second headerbar next to it that must not be indented.
+    val requestedLeadingInset = LocalWindowControlsLeadingInset.current
+    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    var atWindowLeadingCorner by remember { mutableStateOf(false) }
+    val leadingInset = if (atWindowLeadingCorner) requestedLeadingInset else 0.dp
+
     Row(
         modifier = modifier
             .fillMaxWidth()
             .height(YaruConstants.TitleBarHeight)
-            .background(safeBackgroundColor)
+            .then(
+                if (requestedLeadingInset > 0.dp) {
+                    Modifier.onGloballyPositioned { coordinates ->
+                        val position = coordinates.positionInWindow()
+                        val atTop = position.y <= EDGE_TOLERANCE_PX
+                        val atLeading =
+                            if (isRtl) {
+                                val rootWidth = coordinates.findRootCoordinates().size.width
+                                position.x + coordinates.size.width >= rootWidth - EDGE_TOLERANCE_PX
+                            } else {
+                                position.x <= EDGE_TOLERANCE_PX
+                            }
+                        atWindowLeadingCorner = atTop && atLeading
+                    }
+                } else {
+                    Modifier
+                },
+            ).background(safeBackgroundColor)
+            // Dragging the headerbar background moves the window; interactive
+            // children opt out by consuming the press. No-op without a
+            // windowing layer.
+            .then(LocalWindowDragAreaModifier.current)
             .then(
                 if (drawBorder) Modifier.drawBehind {
                     // Defensive: convert the 1 logical-pixel stroke through the DrawScope's `toPx()` so the border keeps its intended thickness on >1.0x screens; a raw `1f` would render as a half-thickness hairline at 2x.
@@ -140,7 +192,9 @@ fun YaruTitleBar(
             )
             // Defensive: when window controls are present, drop the trailing outer padding so the close button reaches the right edge with only WindowControlsRow's own 10dp inner padding (matching Dart `_kYaruTitleBarPadding = 10`). Without this, the symmetric `horizontal = 16dp` outer padding stacked on top of WindowControlsRow's 10dp inset pushed the close button 26dp away from the corner.
             .padding(
-                start = safeTitleSpacing,
+                // Systems that draw their own controls over the client area
+                // (macOS traffic-lights) need their footprint kept clear.
+                start = safeTitleSpacing + leadingInset,
                 end = if (showWindowControls) 0.dp else safeTitleSpacing,
             ),
         verticalAlignment = Alignment.CenterVertically,
@@ -155,6 +209,12 @@ fun YaruTitleBar(
                 if (title != null) {
                     CompositionLocalProvider(
                         LocalYaruTextStyle provides titleTextStyle,
+                        // Mirrors Flutter's AppBar, which wraps its title in a
+                        // DefaultTextStyle with `softWrap: false` +
+                        // ellipsis: a headerbar title never wraps, it truncates.
+                        LocalYaruTextSoftWrap provides false,
+                        LocalYaruTextOverflow provides TextOverflow.Ellipsis,
+                        LocalYaruTextMaxLines provides 1,
                     ) { title() }
                 }
             }
@@ -163,6 +223,9 @@ fun YaruTitleBar(
             Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
                 CompositionLocalProvider(
                     LocalYaruTextStyle provides titleTextStyle,
+                    LocalYaruTextSoftWrap provides false,
+                    LocalYaruTextOverflow provides TextOverflow.Ellipsis,
+                    LocalYaruTextMaxLines provides 1,
                 ) { title() }
             }
         }
@@ -172,6 +235,10 @@ fun YaruTitleBar(
         }
         if (showWindowControls) {
             Spacer(Modifier.width(8.dp))
+        }
+        if (showWindowControls && hostControls != null) {
+            hostControls()
+        } else if (showWindowControls) {
             WindowControlsRow(
                 platform = platform,
                 spacing = safeButtonSpacing,

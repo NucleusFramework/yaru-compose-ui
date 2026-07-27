@@ -5,6 +5,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
@@ -86,6 +87,21 @@ val LocalYaruTypography = staticCompositionLocalOf<YaruTypography> {
 val LocalYaruTextStyle = staticCompositionLocalOf<TextStyle> {
     TextStyle.Default
 }
+
+/**
+ * Line-breaking defaults inherited by [dev.nucleusframework.yarucompose.widgets.YaruText],
+ * mirroring the `softWrap` / `overflow` / `maxLines` fields Flutter's
+ * `DefaultTextStyle` carries — which is how the Dart widgets get single-line
+ * ellipsised titles inside a `YaruTitleBar` without every call site asking for
+ * it. Defaults reproduce plain multi-line text.
+ */
+val LocalYaruTextSoftWrap = staticCompositionLocalOf { true }
+
+/** @see LocalYaruTextSoftWrap */
+val LocalYaruTextOverflow = staticCompositionLocalOf { TextOverflow.Clip }
+
+/** @see LocalYaruTextSoftWrap */
+val LocalYaruTextMaxLines = staticCompositionLocalOf { Int.MAX_VALUE }
 
 /** Composition local for the active foreground color (replaces `m3.LocalContentColor`). */
 val LocalYaruContentColor = staticCompositionLocalOf<Color> { Color.Black }

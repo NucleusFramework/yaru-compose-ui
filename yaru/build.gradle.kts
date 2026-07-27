@@ -42,6 +42,10 @@ kotlin {
 
         jvmMain.dependencies {
             implementation(libs.kotlinx.coroutines.swing)
+            // Windowing layer: the Yaru widgets stay design-only, the window
+            // integration (drag, controls, theme sync) lives in jvmMain.
+            api(libs.nucleus.decorated.window.tao)
+            api(libs.nucleus.application)
         }
 
     }

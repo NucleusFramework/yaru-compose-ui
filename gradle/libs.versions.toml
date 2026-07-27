@@ -1,6 +1,7 @@
 [versions]
 
 kotlin = "2.3.20"
+nucleus = "dev"
 agp = "8.12.3"
 maven-publish = "0.34.0"
 compose-multiplatform = "1.11.0"
@@ -11,6 +12,9 @@ ktor = "3.4.3"
 coil = "3.5.0-beta01"
 
 [libraries]
+nucleus-decorated-window-tao = { module = "dev.nucleusframework:nucleus.decorated-window-tao", version.ref = "nucleus" }
+nucleus-application = { module = "dev.nucleusframework:nucleus.nucleus-application", version.ref = "nucleus" }
+nucleus-graalvm-runtime = { module = "dev.nucleusframework:nucleus.graalvm-runtime", version.ref = "nucleus" }
 
 compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose-multiplatform" }
 compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose-multiplatform" }
@@ -30,6 +34,7 @@ coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" 
 coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
 
 [plugins]
+nucleus = { id = "dev.nucleusframework", version.ref = "nucleus" }
 
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 android-kmp-library = { id = "com.android.library", version.ref = "agp" }
