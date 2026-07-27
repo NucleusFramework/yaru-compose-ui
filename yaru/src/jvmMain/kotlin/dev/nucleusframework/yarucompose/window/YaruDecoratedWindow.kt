@@ -147,35 +147,38 @@ fun NucleusApplicationScope.YaruDecoratedWindow(
                 // host the control buttons. Overlay placement keeps the app's
                 // content starting at the top, under the strip.
                 titleBar = {
-                    Box(Modifier.fillMaxWidth().height(titleBarHeight)) {
-                        if (!isMacOS) {
-                            // Composed above the app content, so outside
-                            // YaruTheme: Nucleus picks its glyph variant and
-                            // hover tint from LocalIsDarkTheme, which would
-                            // otherwise leave the hover invisible on a dark
-                            // theme. Drive it from the app's scheme.
-                            // Providing the direction is enough to flip both
-                            // the side (CenterEnd resolves against it) and the
-                            // button order (WindowControls resolves `Auto`
-                            // from it). Without a report from the app, the OS
-                            // locale decides.
-                            CompositionLocalProvider(
-                                LocalIsDarkTheme provides isDarkTheme,
-                                LocalLayoutDirection provides
-                                    (contentDirection ?: nativeSystemLayoutDirection()),
-                            ) {
-                                WindowControls(
-                                    Modifier
-                                        .align(
-                                            if (controlsOnTrailingEdge) {
-                                                Alignment.CenterEnd
-                                            } else {
-                                                Alignment.CenterStart
+                    // The direction has to be provided ABOVE the Box: an
+                    // `align` is parent data resolved by the Box's own measure
+                    // policy, against the direction in effect where the Box is
+                    // declared — providing it further down would flip the
+                    // button order but never the side.
+                    CompositionLocalProvider(
+                        LocalLayoutDirection provides
+                            (contentDirection ?: nativeSystemLayoutDirection()),
+                    ) {
+                        Box(Modifier.fillMaxWidth().height(titleBarHeight)) {
+                            if (!isMacOS) {
+                                // Composed above the app content, so outside
+                                // YaruTheme: Nucleus picks its glyph variant
+                                // and hover tint from LocalIsDarkTheme, which
+                                // would otherwise leave the hover invisible on
+                                // a dark theme. Drive it from the app's scheme.
+                                CompositionLocalProvider(
+                                    LocalIsDarkTheme provides isDarkTheme,
+                                ) {
+                                    WindowControls(
+                                        Modifier
+                                            .align(
+                                                if (controlsOnTrailingEdge) {
+                                                    Alignment.CenterEnd
+                                                } else {
+                                                    Alignment.CenterStart
+                                                },
+                                            ).onSizeChanged { size ->
+                                                controlsWidth = with(density) { size.width.toDp() }
                                             },
-                                        ).onSizeChanged { size ->
-                                            controlsWidth = with(density) { size.width.toDp() }
-                                        },
-                                )
+                                    )
+                                }
                             }
                         }
                     }
