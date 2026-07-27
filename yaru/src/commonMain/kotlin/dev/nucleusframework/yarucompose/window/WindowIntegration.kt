@@ -2,8 +2,8 @@ package dev.nucleusframework.yarucompose.window
 
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import dev.nucleusframework.yarucompose.themes.YaruColorScheme
 
 /**
  * Contracts a windowing layer can fulfil so the Yaru widgets behave like a
@@ -55,11 +55,16 @@ val LocalWindowControlsLeadingInset = compositionLocalOf { 0.dp }
 val LocalWindowControlsTrailingInset = compositionLocalOf { 0.dp }
 
 /**
- * Lets the theme push its resolved appearance up to the windowing layer, so
- * native surfaces (window background, and on macOS the traffic lights and
- * system materials) follow the Yaru theme instead of the OS setting.
+ * Lets the theme push its resolved color scheme up to the windowing layer.
+ *
+ * The window needs it for its own surfaces — the native background (which
+ * shows wherever Compose has not painted, most visibly while resizing), the
+ * appearance of native controls, and any chrome it draws *outside* the app
+ * content, such as the window control buttons: those are composed above the
+ * content and would otherwise fall back to the default light scheme, leaving
+ * their hover states invisible on a dark theme.
  *
  * The theme is applied *inside* the window content, so the window cannot read
  * it directly — hence this upward hop. `null` when there is no window to sync.
  */
-val LocalNativeWindowSync = compositionLocalOf<((isDark: Boolean, background: Color) -> Unit)?> { null }
+val LocalNativeWindowSync = compositionLocalOf<((scheme: YaruColorScheme) -> Unit)?> { null }

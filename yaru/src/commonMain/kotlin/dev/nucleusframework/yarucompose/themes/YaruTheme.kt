@@ -40,8 +40,8 @@ fun YaruTheme(
     // resizing), and on macOS the native surfaces pick their light/dark
     // appearance from it. No-op without a window layer.
     val nativeWindowSync = LocalNativeWindowSync.current
-    LaunchedEffect(nativeWindowSync, isDark, yaruScheme.surface) {
-        nativeWindowSync?.invoke(isDark, yaruScheme.surface)
+    LaunchedEffect(nativeWindowSync, yaruScheme) {
+        nativeWindowSync?.invoke(yaruScheme)
     }
 
     CompositionLocalProvider(

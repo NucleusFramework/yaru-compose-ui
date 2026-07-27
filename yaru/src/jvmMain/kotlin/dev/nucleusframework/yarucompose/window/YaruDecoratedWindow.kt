@@ -40,6 +40,8 @@ import dev.nucleusframework.window.utils.linux.rememberLinuxButtonLayout
 import dev.nucleusframework.window.noWindowDrag
 import dev.nucleusframework.window.styling.LocalDecoratedWindowStyle
 import dev.nucleusframework.window.windowDragArea
+import dev.nucleusframework.yarucompose.themes.LocalYaruColorScheme
+import dev.nucleusframework.yarucompose.themes.YaruColorScheme
 import dev.nucleusframework.yarucompose.themes.YaruConstants
 import dev.nucleusframework.yarucompose.widgets.YaruWindowControl
 import dev.nucleusframework.yarucompose.widgets.YaruWindowControlPlatform
@@ -93,11 +95,12 @@ fun NucleusApplicationScope.YaruDecoratedWindow(
         },
     content: @Composable NucleusDecoratedWindowScope.() -> Unit,
 ) {
-    // The YaruTheme lives inside [content], so it pushes its resolved
-    // appearance up through LocalNativeWindowSync — reading the color scheme
-    // here would only ever see the defaults.
-    var background by remember { mutableStateOf(Color.Unspecified) }
-    val nativeWindowSync: (Boolean, Color) -> Unit = { _, bg -> background = bg }
+    // The YaruTheme lives inside [content], so it pushes its resolved scheme
+    // up through LocalNativeWindowSync — reading it here would only ever see
+    // the defaults.
+    var themeScheme by remember { mutableStateOf<YaruColorScheme?>(null) }
+    val nativeWindowSync: (YaruColorScheme) -> Unit = { scheme -> themeScheme = scheme }
+    val background = themeScheme?.surface ?: Color.Unspecified
 
     val baseWindowStyle = LocalDecoratedWindowStyle.current
     CompositionLocalProvider(
@@ -158,7 +161,14 @@ fun NucleusApplicationScope.YaruDecoratedWindow(
                                             controlsWidth = with(density) { size.width.toDp() }
                                         },
                             ) {
-                                windowScope.YaruWindowControls(controlPlatform)
+                                // Composed above the app content, so outside
+                                // YaruTheme: without the synced scheme the
+                                // buttons would use the default light palette
+                                // and their hover states would be invisible on
+                                // a dark theme.
+                                WithYaruScheme(themeScheme) {
+                                    windowScope.YaruWindowControls(controlPlatform)
+                                }
                             }
                         }
                     }
@@ -197,6 +207,20 @@ fun NucleusApplicationScope.YaruDecoratedWindow(
                 }
             }
         }
+    }
+}
+
+/** Applies the theme scheme the app pushed up, if any. */
+@Suppress("FunctionNaming")
+@Composable
+private fun WithYaruScheme(
+    scheme: YaruColorScheme?,
+    content: @Composable () -> Unit,
+) {
+    if (scheme == null) {
+        content()
+    } else {
+        CompositionLocalProvider(LocalYaruColorScheme provides scheme, content = content)
     }
 }
 
