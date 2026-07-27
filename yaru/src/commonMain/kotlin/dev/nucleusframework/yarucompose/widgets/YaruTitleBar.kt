@@ -42,8 +42,8 @@ import androidx.compose.ui.layout.findRootCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.unit.LayoutDirection
-import dev.nucleusframework.yarucompose.window.LocalWindowControls
 import dev.nucleusframework.yarucompose.window.LocalWindowControlsLeadingInset
+import dev.nucleusframework.yarucompose.window.LocalWindowControlsTrailingInset
 import dev.nucleusframework.yarucompose.window.LocalWindowDragAreaModifier
 import dev.nucleusframework.yarucompose.themes.YaruConstants
 import dev.nucleusframework.yarucompose.themes.isHighContrast
@@ -130,9 +130,8 @@ fun YaruTitleBar(
     // exist, their order and their side; it hands them over through
     // [LocalWindowControls] and the Yaru artwork is used to draw them. Without
     // one, fall back to the callback-driven row below.
-    val hostControls = LocalWindowControls.current
     val showWindowControls = style == YaruTitleBarStyle.Normal &&
-        (hostControls != null || isClosable || isMaximizable || isMinimizable || isRestorable)
+        (isClosable || isMaximizable || isMinimizable || isRestorable)
 
     // Title text style — `titleLarge.copy(fontSize = 14.sp, fontWeight = W500)`
     // matches `theme.textTheme.titleLarge.copyWith(fontSize: 14, fontWeight: w500)`
@@ -148,27 +147,29 @@ fun YaruTitleBar(
     // sitting there must keep their footprint clear — a GNOME master/detail
     // layout puts a second headerbar next to it that must not be indented.
     val requestedLeadingInset = LocalWindowControlsLeadingInset.current
+    val requestedTrailingInset = LocalWindowControlsTrailingInset.current
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     var atWindowLeadingCorner by remember { mutableStateOf(false) }
+    var atWindowTrailingCorner by remember { mutableStateOf(false) }
     val leadingInset = if (atWindowLeadingCorner) requestedLeadingInset else 0.dp
+    val trailingInset = if (atWindowTrailingCorner) requestedTrailingInset else 0.dp
+    val tracksCorners = requestedLeadingInset > 0.dp || requestedTrailingInset > 0.dp
 
     Row(
         modifier = modifier
             .fillMaxWidth()
             .height(YaruConstants.TitleBarHeight)
             .then(
-                if (requestedLeadingInset > 0.dp) {
+                if (tracksCorners) {
                     Modifier.onGloballyPositioned { coordinates ->
                         val position = coordinates.positionInWindow()
+                        val rootWidth = coordinates.findRootCoordinates().size.width
                         val atTop = position.y <= EDGE_TOLERANCE_PX
-                        val atLeading =
-                            if (isRtl) {
-                                val rootWidth = coordinates.findRootCoordinates().size.width
-                                position.x + coordinates.size.width >= rootWidth - EDGE_TOLERANCE_PX
-                            } else {
-                                position.x <= EDGE_TOLERANCE_PX
-                            }
-                        atWindowLeadingCorner = atTop && atLeading
+                        val atLeft = position.x <= EDGE_TOLERANCE_PX
+                        val atRight =
+                            position.x + coordinates.size.width >= rootWidth - EDGE_TOLERANCE_PX
+                        atWindowLeadingCorner = atTop && if (isRtl) atRight else atLeft
+                        atWindowTrailingCorner = atTop && if (isRtl) atLeft else atRight
                     }
                 } else {
                     Modifier
@@ -195,7 +196,7 @@ fun YaruTitleBar(
                 // Systems that draw their own controls over the client area
                 // (macOS traffic-lights) need their footprint kept clear.
                 start = safeTitleSpacing + leadingInset,
-                end = if (showWindowControls) 0.dp else safeTitleSpacing,
+                end = (if (showWindowControls) 0.dp else safeTitleSpacing) + trailingInset,
             ),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = if (centerTitle) Arrangement.SpaceBetween else Arrangement.Start,
@@ -235,10 +236,6 @@ fun YaruTitleBar(
         }
         if (showWindowControls) {
             Spacer(Modifier.width(8.dp))
-        }
-        if (showWindowControls && hostControls != null) {
-            hostControls()
-        } else if (showWindowControls) {
             WindowControlsRow(
                 platform = platform,
                 spacing = safeButtonSpacing,

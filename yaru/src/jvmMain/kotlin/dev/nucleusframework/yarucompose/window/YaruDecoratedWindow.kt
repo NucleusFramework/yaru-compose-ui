@@ -1,7 +1,7 @@
 package dev.nucleusframework.yarucompose.window
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -16,6 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.LayoutDirection
@@ -34,6 +36,7 @@ import dev.nucleusframework.window.WindowControlType
 import dev.nucleusframework.window.WindowControls
 import dev.nucleusframework.window.WindowControlsRenderer
 import dev.nucleusframework.window.WindowScaffold
+import dev.nucleusframework.window.utils.linux.rememberLinuxButtonLayout
 import dev.nucleusframework.window.noWindowDrag
 import dev.nucleusframework.window.styling.LocalDecoratedWindowStyle
 import dev.nucleusframework.window.windowDragArea
@@ -124,16 +127,47 @@ fun NucleusApplicationScope.YaruDecoratedWindow(
             // the macOS traffic-lights inside the bar and sizes the Windows
             // caption zone. Overlay placement keeps the app's content starting
             // at the top, under the strip.
+            // macOS keeps its real AppKit traffic-lights on the leading edge;
+            // everywhere else the window is fully undecorated and the controls
+            // are drawn here — at window level rather than inside a headerbar,
+            // because a Yaru app may compose several (master + detail) or none
+            // at all, and the window must stay closable either way.
+            val isMacOS = Platform.Current == Platform.MacOS
+            val linuxLayout =
+                if (Platform.Current == Platform.Linux) rememberLinuxButtonLayout() else null
+            // The desktop decides which side the buttons live on
+            // (GNOME's `button-layout`); default to the trailing edge.
+            val controlsOnTrailingEdge = linuxLayout?.controlsOnRight ?: true
+            var controlsWidth by remember { mutableStateOf(0.dp) }
+            val density = LocalDensity.current
+
             WindowScaffold(
-                titleBar = { Spacer(Modifier.fillMaxWidth().height(titleBarHeight)) },
+                titleBar = {
+                    Box(Modifier.fillMaxWidth().height(titleBarHeight)) {
+                        if (!isMacOS) {
+                            Box(
+                                modifier =
+                                    Modifier
+                                        .align(
+                                            if (controlsOnTrailingEdge) {
+                                                Alignment.CenterEnd
+                                            } else {
+                                                Alignment.CenterStart
+                                            },
+                                        ).onSizeChanged { size ->
+                                            controlsWidth = with(density) { size.width.toDp() }
+                                        },
+                            ) {
+                                windowScope.YaruWindowControls(controlPlatform)
+                            }
+                        }
+                    }
+                },
                 titleBarPlacement = TitleBarPlacement.Overlay(autoHideInFullscreen = false),
             ) { _ ->
-                // macOS keeps its real AppKit traffic-lights, which float over
-                // the client area on the LEADING edge: drawing Yaru buttons on
-                // top of them would overlap, so the headerbar reserves their
-                // footprint instead. Everywhere else the window is fully
-                // undecorated and Yaru draws the buttons itself.
-                val isMacOS = Platform.Current == Platform.MacOS
+                // Whatever the window draws over a headerbar has to be kept
+                // clear of its content: the traffic-light footprint on macOS,
+                // the measured button strip elsewhere.
                 val trafficLightInset =
                     if (isMacOS) {
                         val insets = LocalWindowChromeInsets.current.controlsInsets
@@ -148,13 +182,16 @@ fun NucleusApplicationScope.YaruDecoratedWindow(
                     LocalWindowDragAreaModifier provides Modifier.windowDragArea(),
                     LocalNoWindowDragModifier provides Modifier.noWindowDrag(),
                     LocalNativeWindowSync provides nativeWindowSync,
-                    LocalWindowControlsLeadingInset provides trafficLightInset,
-                    LocalWindowControls provides
+                    LocalWindowControlsLeadingInset provides
                         if (isMacOS) {
-                            null
+                            trafficLightInset
+                        } else if (!controlsOnTrailingEdge) {
+                            controlsWidth
                         } else {
-                            { windowScope.YaruWindowControls(controlPlatform) }
+                            0.dp
                         },
+                    LocalWindowControlsTrailingInset provides
+                        if (!isMacOS && controlsOnTrailingEdge) controlsWidth else 0.dp,
                 ) {
                     windowScope.content()
                 }

@@ -1,6 +1,5 @@
 package dev.nucleusframework.yarucompose.window
 
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,30 +35,24 @@ val LocalWindowDragAreaModifier = compositionLocalOf<Modifier> { Modifier }
 val LocalNoWindowDragModifier = compositionLocalOf<Modifier> { Modifier }
 
 /**
- * The window controls (minimize / maximize-restore / close) as rendered by
- * the windowing layer.
- *
- * The host owns the semantics — which buttons exist, their order and side
- * (on Linux the desktop's own `button-layout` decides), the
- * maximize/restore swap and the close routing — while the artwork stays
- * Yaru's. [dev.nucleusframework.yarucompose.widgets.YaruTitleBar] renders
- * this instead of its own callback-driven control row whenever it is
- * present.
- *
- * `null` when no window layer is available; the title bar then falls back to
- * its `isClosable` / `onClose` … parameters.
- */
-val LocalWindowControls = compositionLocalOf<(@Composable () -> Unit)?> { null }
-
-/**
  * Horizontal space reserved at the LEADING edge of a headerbar for window
  * controls the system draws itself — the macOS traffic-lights, which float
  * over the client area.
  *
- * Zero on GNOME and Windows, where the buttons are drawn by the toolkit and
- * come through [LocalWindowControls] instead.
+ * Zero when the window layer draws no controls over the bar, or draws them
+ * on the trailing edge (see [LocalWindowControlsTrailingInset]).
  */
 val LocalWindowControlsLeadingInset = compositionLocalOf { 0.dp }
+
+/**
+ * Horizontal space reserved at the TRAILING edge of a headerbar for window
+ * controls the window layer draws over it — the toolkit-drawn buttons on
+ * Windows and Linux, when the desktop puts them on that side.
+ *
+ * Zero when the controls sit on the leading edge (see
+ * [LocalWindowControlsLeadingInset]) or when there are none.
+ */
+val LocalWindowControlsTrailingInset = compositionLocalOf { 0.dp }
 
 /**
  * Lets the theme push its resolved appearance up to the windowing layer, so
