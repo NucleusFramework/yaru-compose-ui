@@ -2,6 +2,7 @@ package dev.nucleusframework.yarucompose.window
 
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import dev.nucleusframework.yarucompose.themes.YaruColorScheme
 
@@ -53,6 +54,17 @@ val LocalWindowControlsLeadingInset = compositionLocalOf { 0.dp }
  * [LocalWindowControlsLeadingInset]) or when there are none.
  */
 val LocalWindowControlsTrailingInset = compositionLocalOf { 0.dp }
+
+/**
+ * Lets the app push its layout direction up to the windowing layer.
+ *
+ * The window controls are composed above the app content — outside any
+ * `LocalLayoutDirection` the app provides — so an in-app RTL switch would
+ * otherwise leave them on the wrong side, in the wrong order. Apps that flip
+ * direction themselves should report it here; those that inherit it from the
+ * OS locale need not, the window reads that natively.
+ */
+val LocalWindowLayoutDirectionSync = compositionLocalOf<((LayoutDirection) -> Unit)?> { null }
 
 /**
  * Lets the theme push its resolved color scheme up to the windowing layer.

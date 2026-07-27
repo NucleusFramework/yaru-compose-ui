@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -35,6 +36,7 @@ import dev.nucleusframework.yarucompose.themes.LocalYaruColorScheme
 import dev.nucleusframework.yarucompose.themes.YaruConstants
 import dev.nucleusframework.yarucompose.themes.YaruTheme
 import dev.nucleusframework.yarucompose.themes.YaruVariant
+import dev.nucleusframework.yarucompose.window.LocalWindowLayoutDirectionSync
 import dev.nucleusframework.yarucompose.themes.yaruSystemAccentVariant
 import dev.nucleusframework.yarucompose.themes.yaruSystemInDarkMode
 import dev.nucleusframework.yarucompose.themes.isHighContrast
@@ -379,9 +381,17 @@ fun App() {
         // RTL is propagated via LocalLayoutDirection so every descendant
         // (including positioning of master/detail panes) flips together —
         // mirrors example.dart:19-25 `Directionality(textDirection: …)`.
+        val layoutDirection =
+            if (settings.rtl.value) LayoutDirection.Rtl else LayoutDirection.Ltr
+        // The window controls are composed above this content, so they cannot
+        // see the direction provided below — report it (no-op without a
+        // windowing layer).
+        val windowDirectionSync = LocalWindowLayoutDirectionSync.current
+        LaunchedEffect(windowDirectionSync, layoutDirection) {
+            windowDirectionSync?.invoke(layoutDirection)
+        }
         CompositionLocalProvider(
-            LocalLayoutDirection provides
-                if (settings.rtl.value) LayoutDirection.Rtl else LayoutDirection.Ltr,
+            LocalLayoutDirection provides layoutDirection,
         ) {
             ExampleHome(settings = settings)
         }

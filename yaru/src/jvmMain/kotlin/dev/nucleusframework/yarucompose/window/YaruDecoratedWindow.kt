@@ -26,11 +26,14 @@ import dev.nucleusframework.application.DecoratedWindow
 import dev.nucleusframework.application.NucleusApplicationScope
 import dev.nucleusframework.application.NucleusDecoratedWindowScope
 import dev.nucleusframework.core.runtime.Platform
+import androidx.compose.ui.platform.LocalLayoutDirection
+import dev.nucleusframework.window.ControlButtonsDirection
 import dev.nucleusframework.window.LocalIsDarkTheme
 import dev.nucleusframework.window.LocalWindowChromeInsets
 import dev.nucleusframework.window.TitleBarPlacement
 import dev.nucleusframework.window.WindowControls
 import dev.nucleusframework.window.WindowScaffold
+import dev.nucleusframework.window.nativeSystemLayoutDirection
 import dev.nucleusframework.window.noWindowDrag
 import dev.nucleusframework.window.styling.LocalDecoratedWindowStyle
 import dev.nucleusframework.window.utils.linux.rememberLinuxButtonLayout
@@ -83,6 +86,10 @@ fun NucleusApplicationScope.YaruDecoratedWindow(
     // the defaults.
     var themeScheme by remember { mutableStateOf<YaruColorScheme?>(null) }
     val nativeWindowSync: (YaruColorScheme) -> Unit = { scheme -> themeScheme = scheme }
+    // Same hop for the layout direction: an app that flips RTL itself does so
+    // inside its content, below this window.
+    var contentDirection by remember { mutableStateOf<LayoutDirection?>(null) }
+    val layoutDirectionSync: (LayoutDirection) -> Unit = { direction -> contentDirection = direction }
     val background = themeScheme?.surface ?: Color.Unspecified
     val isDarkTheme = themeScheme?.isDark ?: false
 
@@ -120,8 +127,19 @@ fun NucleusApplicationScope.YaruDecoratedWindow(
             val controlsOnTrailingEdge = linuxLayout?.controlsOnRight ?: true
             var controlsWidth by remember { mutableStateOf(0.dp) }
             val density = LocalDensity.current
+            // The scaffold sits above the app content too, so its own `Auto`
+            // would read LTR: hand it the reported direction. This is what
+            // flips the macOS traffic-lights natively and picks the side their
+            // footprint is reserved on.
+            val controlButtonsDirection =
+                when (contentDirection) {
+                    LayoutDirection.Rtl -> ControlButtonsDirection.Rtl
+                    LayoutDirection.Ltr -> ControlButtonsDirection.Ltr
+                    null -> ControlButtonsDirection.System
+                }
 
             WindowScaffold(
+                controlButtonsDirection = controlButtonsDirection,
                 // Transparent strip matching the headerbar height: a Yaru app
                 // composes its own headerbars, so the slot exists to publish
                 // that height to the native layer — which centres the macOS
@@ -136,7 +154,16 @@ fun NucleusApplicationScope.YaruDecoratedWindow(
                             // hover tint from LocalIsDarkTheme, which would
                             // otherwise leave the hover invisible on a dark
                             // theme. Drive it from the app's scheme.
-                            CompositionLocalProvider(LocalIsDarkTheme provides isDarkTheme) {
+                            // Providing the direction is enough to flip both
+                            // the side (CenterEnd resolves against it) and the
+                            // button order (WindowControls resolves `Auto`
+                            // from it). Without a report from the app, the OS
+                            // locale decides.
+                            CompositionLocalProvider(
+                                LocalIsDarkTheme provides isDarkTheme,
+                                LocalLayoutDirection provides
+                                    (contentDirection ?: nativeSystemLayoutDirection()),
+                            ) {
                                 WindowControls(
                                     Modifier
                                         .align(
@@ -172,6 +199,7 @@ fun NucleusApplicationScope.YaruDecoratedWindow(
                     LocalWindowDragAreaModifier provides Modifier.windowDragArea(),
                     LocalNoWindowDragModifier provides Modifier.noWindowDrag(),
                     LocalNativeWindowSync provides nativeWindowSync,
+                    LocalWindowLayoutDirectionSync provides layoutDirectionSync,
                     LocalWindowControlsLeadingInset provides
                         if (isMacOS) {
                             trafficLightInset
