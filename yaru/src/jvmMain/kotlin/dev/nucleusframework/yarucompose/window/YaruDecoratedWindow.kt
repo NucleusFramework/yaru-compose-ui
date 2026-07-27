@@ -1,10 +1,8 @@
 package dev.nucleusframework.yarucompose.window
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -28,24 +26,17 @@ import dev.nucleusframework.application.DecoratedWindow
 import dev.nucleusframework.application.NucleusApplicationScope
 import dev.nucleusframework.application.NucleusDecoratedWindowScope
 import dev.nucleusframework.core.runtime.Platform
-import dev.nucleusframework.window.ControlButtonsDirection
-import dev.nucleusframework.window.DecoratedWindowScope
+import dev.nucleusframework.window.LocalIsDarkTheme
 import dev.nucleusframework.window.LocalWindowChromeInsets
 import dev.nucleusframework.window.TitleBarPlacement
-import dev.nucleusframework.window.WindowControlType
 import dev.nucleusframework.window.WindowControls
-import dev.nucleusframework.window.WindowControlsRenderer
 import dev.nucleusframework.window.WindowScaffold
-import dev.nucleusframework.window.utils.linux.rememberLinuxButtonLayout
 import dev.nucleusframework.window.noWindowDrag
 import dev.nucleusframework.window.styling.LocalDecoratedWindowStyle
+import dev.nucleusframework.window.utils.linux.rememberLinuxButtonLayout
 import dev.nucleusframework.window.windowDragArea
-import dev.nucleusframework.yarucompose.themes.LocalYaruColorScheme
 import dev.nucleusframework.yarucompose.themes.YaruColorScheme
 import dev.nucleusframework.yarucompose.themes.YaruConstants
-import dev.nucleusframework.yarucompose.widgets.YaruWindowControl
-import dev.nucleusframework.yarucompose.widgets.YaruWindowControlPlatform
-import dev.nucleusframework.yarucompose.widgets.YaruWindowControlType
 
 /**
  * Yaru-styled wrapper for Nucleus' `DecoratedWindow` — the YaruCompose
@@ -56,17 +47,17 @@ import dev.nucleusframework.yarucompose.widgets.YaruWindowControlType
  * they behave like a native GNOME window:
  * - [dev.nucleusframework.yarucompose.widgets.YaruTitleBar] drags the window
  *   by its background and double-click toggles maximize;
- * - its control buttons are drawn with [YaruWindowControl] but driven by
- *   Nucleus, which follows the desktop's own `button-layout` (order and
- *   side), swaps maximize/restore with the window state and routes close
- *   through [onCloseRequest];
+ * - the window controls are drawn by Nucleus in the platform's own style
+ *   (Adwaita / Breeze on Linux, Fluent on Windows) and follow the desktop's
+ *   `button-layout` for order and side, with the maximize/restore swap and
+ *   the close routed through [onCloseRequest];
  * - the window background follows the Yaru theme, so resizing never flashes.
  *
  * Call it from `dev.nucleusframework.application.nucleusApplication`. The
  * [content] receives the window scope, so it can reach the window state and
  * the Nucleus chrome APIs.
  */
-@Suppress("FunctionNaming", "LongParameterList")
+@Suppress("FunctionNaming", "LongParameterList", "LongMethod")
 @Composable
 fun NucleusApplicationScope.YaruDecoratedWindow(
     onCloseRequest: () -> Unit,
@@ -85,14 +76,6 @@ fun NucleusApplicationScope.YaruDecoratedWindow(
     // Height of the app's headerbar. The native layer centres the macOS
     // traffic-lights against it, so it must match the bar actually composed.
     titleBarHeight: Dp = YaruConstants.TitleBarHeight,
-    // Windows draws square Fluent-metric buttons rather than the Yaru discs;
-    // the artwork stays Yaru's in both cases (see [YaruWindowControlPlatform]).
-    controlPlatform: YaruWindowControlPlatform =
-        if (Platform.Current == Platform.Windows) {
-            YaruWindowControlPlatform.Windows
-        } else {
-            YaruWindowControlPlatform.Yaru
-        },
     content: @Composable NucleusDecoratedWindowScope.() -> Unit,
 ) {
     // The YaruTheme lives inside [content], so it pushes its resolved scheme
@@ -101,6 +84,7 @@ fun NucleusApplicationScope.YaruDecoratedWindow(
     var themeScheme by remember { mutableStateOf<YaruColorScheme?>(null) }
     val nativeWindowSync: (YaruColorScheme) -> Unit = { scheme -> themeScheme = scheme }
     val background = themeScheme?.surface ?: Color.Unspecified
+    val isDarkTheme = themeScheme?.isDark ?: false
 
     val baseWindowStyle = LocalDecoratedWindowStyle.current
     CompositionLocalProvider(
@@ -123,13 +107,6 @@ fun NucleusApplicationScope.YaruDecoratedWindow(
             onKeyEvent = onKeyEvent,
         ) {
             val windowScope = this
-            // Transparent, non-interactive strip matching the headerbar
-            // height: a Yaru app composes its own headerbars (GNOME layouts
-            // routinely show several side by side), so the slot only exists to
-            // publish that height to the native layer — which is what centres
-            // the macOS traffic-lights inside the bar and sizes the Windows
-            // caption zone. Overlay placement keeps the app's content starting
-            // at the top, under the strip.
             // macOS keeps its real AppKit traffic-lights on the leading edge;
             // everywhere else the window is fully undecorated and the controls
             // are drawn here — at window level rather than inside a headerbar,
@@ -145,11 +122,22 @@ fun NucleusApplicationScope.YaruDecoratedWindow(
             val density = LocalDensity.current
 
             WindowScaffold(
+                // Transparent strip matching the headerbar height: a Yaru app
+                // composes its own headerbars, so the slot exists to publish
+                // that height to the native layer — which centres the macOS
+                // traffic-lights and sizes the Windows caption zone — and to
+                // host the control buttons. Overlay placement keeps the app's
+                // content starting at the top, under the strip.
                 titleBar = {
                     Box(Modifier.fillMaxWidth().height(titleBarHeight)) {
                         if (!isMacOS) {
-                            Box(
-                                modifier =
+                            // Composed above the app content, so outside
+                            // YaruTheme: Nucleus picks its glyph variant and
+                            // hover tint from LocalIsDarkTheme, which would
+                            // otherwise leave the hover invisible on a dark
+                            // theme. Drive it from the app's scheme.
+                            CompositionLocalProvider(LocalIsDarkTheme provides isDarkTheme) {
+                                WindowControls(
                                     Modifier
                                         .align(
                                             if (controlsOnTrailingEdge) {
@@ -160,15 +148,7 @@ fun NucleusApplicationScope.YaruDecoratedWindow(
                                         ).onSizeChanged { size ->
                                             controlsWidth = with(density) { size.width.toDp() }
                                         },
-                            ) {
-                                // Composed above the app content, so outside
-                                // YaruTheme: without the synced scheme the
-                                // buttons would use the default light palette
-                                // and their hover states would be invisible on
-                                // a dark theme.
-                                WithYaruScheme(themeScheme) {
-                                    windowScope.YaruWindowControls(controlPlatform)
-                                }
+                                )
                             }
                         }
                     }
@@ -207,66 +187,5 @@ fun NucleusApplicationScope.YaruDecoratedWindow(
                 }
             }
         }
-    }
-}
-
-/** Applies the theme scheme the app pushed up, if any. */
-@Suppress("FunctionNaming")
-@Composable
-private fun WithYaruScheme(
-    scheme: YaruColorScheme?,
-    content: @Composable () -> Unit,
-) {
-    if (scheme == null) {
-        content()
-    } else {
-        CompositionLocalProvider(LocalYaruColorScheme provides scheme, content = content)
-    }
-}
-
-/** The platform's window controls, drawn with Yaru artwork. */
-@Suppress("FunctionNaming")
-@Composable
-private fun DecoratedWindowScope.YaruWindowControls(controlPlatform: YaruWindowControlPlatform) {
-    Row(
-        modifier = Modifier.fillMaxHeight(),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        WindowControls(
-            direction = ControlButtonsDirection.Auto,
-            renderer = YaruWindowControlsRenderer(controlPlatform),
-        )
-    }
-}
-
-/**
- * Draws each control Nucleus asks for with [YaruWindowControl]. Nucleus keeps
- * every decision (which buttons, in which order, on which side, and what they
- * do); this only maps the type onto the Yaru glyph.
- */
-private class YaruWindowControlsRenderer(
-    private val controlPlatform: YaruWindowControlPlatform,
-) : WindowControlsRenderer {
-    @Composable
-    override fun Control(
-        type: WindowControlType,
-        state: dev.nucleusframework.window.DecoratedWindowState,
-        onClick: () -> Unit,
-    ) {
-        val yaruType =
-            when (type) {
-                WindowControlType.Minimize -> YaruWindowControlType.Minimize
-                WindowControlType.Maximize -> YaruWindowControlType.Maximize
-                // Leaving fullscreen is the same "shrink back" affordance as
-                // restoring a maximized window.
-                WindowControlType.Restore, WindowControlType.ExitFullscreen ->
-                    YaruWindowControlType.Restore
-                WindowControlType.Close -> YaruWindowControlType.Close
-            }
-        YaruWindowControl(
-            type = yaruType,
-            onTap = onClick,
-            platform = controlPlatform,
-        )
     }
 }
