@@ -15,6 +15,7 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -31,6 +32,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
@@ -172,10 +174,16 @@ fun YaruChoiceChipBar(
     clearOnSelect: Boolean = true,
     // Mirrors Dart's `animationDuration` + `animationCurve` (defaults
     // `Duration(milliseconds: 300)` + `Curves.bounceIn`) — drives the
-    // `_controller.animateTo` call on go-previous / go-next nav button taps.
+    // `animateScrollBy` call on go-previous / go-next nav button taps.
+    // Defensive: we deliberately diverge from Dart's `Curves.bounceIn` default.
+    // `bounceIn` is `1 - bounceOut(1 - t)`, a piecewise-parabolic curve that
+    // stalls and micro-reverses near t=0; over a 100px scroll it reads as a
+    // stutter rather than a bounce. `easeInOut` keeps the same 300ms budget
+    // while scrolling smoothly. Callers wanting Dart parity can pass
+    // `tween(300, easing = YaruEasing.BounceIn)` explicitly.
     scrollAnimation: AnimationSpec<Float> = tween(
         CHIP_ANIMATION_DURATION_MILLIS,
-        easing = YaruEasing.BounceIn,
+        easing = YaruEasing.EaseInOut,
     ),
 ) {
     val count = isSelected.size
@@ -280,21 +288,27 @@ private fun ScrollableBar(
 ) {
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
-    val canGoPrevious = listState.canScrollBackward
-    val canGoNext = listState.canScrollForward
+    // Defensive: `canScrollBackward` / `canScrollForward` change on every
+    // scroll frame. Reading them directly here would invalidate `ScrollableBar`
+    // — and with it the whole `LazyRow` content lambda — 60 times a second,
+    // which is what made nav-button scrolling stutter. `derivedStateOf` narrows
+    // the subscription to the boolean flips.
+    val canGoPrevious by remember(listState) { derivedStateOf { listState.canScrollBackward } }
+    val canGoNext by remember(listState) { derivedStateOf { listState.canScrollForward } }
 
     if (clearOnSelect) {
         LaunchedEffect(isSelected.toList()) {
             if (listState.firstVisibleItemIndex != 0 || listState.firstVisibleItemScrollOffset != 0) {
-                scope.launch { listState.animateScrollToItem(0) }
+                listState.animateScrollToItem(0)
             }
         }
     }
 
-    val list: @Composable (Modifier) -> Unit = { mod ->
+    val list: @Composable (Modifier, PaddingValues) -> Unit = { mod, contentPadding ->
         LazyRow(
             modifier = mod,
             state = listState,
+            contentPadding = contentPadding,
             horizontalArrangement = Arrangement.spacedBy(spacing),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -326,11 +340,23 @@ private fun ScrollableBar(
             topEnd = if (canGoNext) chipHeight else 0.dp,
             bottomEnd = if (canGoNext) chipHeight else 0.dp,
         )
+        // The nav buttons float over the lane, so the lane must reserve a gutter
+        // for them — otherwise chips slide underneath and collide with the
+        // arrows. The gutter is keyed on "does the content overflow at all"
+        // (rather than on each button's own visibility) so it stays constant
+        // while scrolling: toggling it per-button would shift the chips sideways
+        // every time you reach an edge.
+        val overflows = canGoPrevious || canGoNext
+        val navSide = (chipHeight - ChipNavButtonInset).coerceAtLeast(0.dp)
+        val laneGutter = if (overflows) navSide + spacing else 0.dp
         Box(
             modifier = modifier.height(chipHeight),
             contentAlignment = Alignment.Center,
         ) {
-            list(Modifier.fillMaxHeight().clip(laneShape))
+            list(
+                Modifier.fillMaxHeight().clip(laneShape),
+                PaddingValues(horizontal = laneGutter),
+            )
             // Curves.bounceIn / 300 ms — `animationCurve` / `animationDuration`
             // defaults from yaru_choice_chip_bar.dart (lines 13, 15) drive the
             // nav buttons' `AnimatedOpacity`.
@@ -349,6 +375,7 @@ private fun ScrollableBar(
                 NavigationButton(
                     chipHeight = chipHeight,
                     glyph = YaruIcons.go_previous,
+                    opaque = true,
                     onTap = {
                         scope.launch { listState.animateScrollBy(-CHIP_NAVIGATION_STEP_PX, scrollAnimation) }
                     },
@@ -363,6 +390,7 @@ private fun ScrollableBar(
                 NavigationButton(
                     chipHeight = chipHeight,
                     glyph = YaruIcons.go_next,
+                    opaque = true,
                     onTap = {
                         scope.launch { listState.animateScrollBy(CHIP_NAVIGATION_STEP_PX, scrollAnimation) }
                     },
@@ -382,7 +410,7 @@ private fun ScrollableBar(
                 } else null,
             )
             Spacer(Modifier.width(spacing))
-            Box(modifier = Modifier.weight(1f)) { list(Modifier.fillMaxHeight()) }
+            Box(modifier = Modifier.weight(1f)) { list(Modifier.fillMaxHeight(), PaddingValues(0.dp)) }
             Spacer(Modifier.width(spacing))
             NavigationButton(
                 chipHeight = chipHeight,
@@ -540,9 +568,14 @@ private fun NavigationButton(
     chipHeight: Dp,
     glyph: Char,
     onTap: (() -> Unit)?,
+    // Stack style floats the button over the scrolling lane. Chips scroll
+    // through the lane's content padding, so the button needs a solid fill —
+    // otherwise the chips show through the arrow glyph.
+    opaque: Boolean = false,
 ) {
     val scheme = LocalYaruColorScheme.current
     val borderColor = if (scheme.isHighContrast) scheme.outlineVariant else scheme.outline
+    val fillColor = if (opaque) scheme.surface else Color.Transparent
     val enabled = onTap != null
     val tint = scheme.onSurface.copy(alpha = if (enabled) 1f else CHIP_DISABLED_FG_ALPHA)
     // `chipHeight` is already `coerceAtLeast(0.dp)` upstream, but subtracting
@@ -559,6 +592,7 @@ private fun NavigationButton(
             modifier = Modifier
                 .size(side)
                 .clip(CircleShape)
+                .background(color = fillColor, shape = CircleShape)
                 .border(width = ChipBorderWidth, color = borderColor, shape = CircleShape)
                 .let {
                     if (onTap != null) {
