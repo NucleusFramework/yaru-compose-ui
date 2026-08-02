@@ -14,8 +14,8 @@ import sample.app.App
 // leaves the master/detail gallery room to breathe and stays resizable.
 //
 // The window is client-side decorated by Nucleus: no system title bar, so the
-// app's `YaruTitleBar` *is* the chrome — it drags the window and hosts the
-// control buttons, drawn in Yaru style but ordered by the desktop.
+// app's `YaruTitleBar` *is* the chrome — it drags the window, while Nucleus
+// draws the control buttons over it in the platform's own style.
 fun main() = nucleusApplication {
     YaruDecoratedWindow(
         title = "Yaru",

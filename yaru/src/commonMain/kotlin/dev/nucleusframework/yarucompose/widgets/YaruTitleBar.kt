@@ -15,10 +15,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -62,11 +63,16 @@ enum class YaruTitleBarStyle { Hidden, Undecorated, Normal }
  * white at 6% (dark) — see the Dart source line 198-203 — or 100% in
  * high-contrast mode.
  *
- * Window control buttons (minimize/maximize/restore/close) are appended to the
- * trailing edge when the corresponding `is*` flag is `true` and `style` is
- * [YaruTitleBarStyle.Normal]. The button platform style ([YaruWindowControlPlatform])
- * defaults to [YaruWindowControlPlatform.Yaru] but can be overridden — host apps
- * pick the macOS / Windows variant per their environment.
+ * The bar draws no window controls: minimize / maximize / restore / close are
+ * the windowing layer's business (Nucleus' `YaruDecoratedWindow` draws them in
+ * the platform's own style, on the side the desktop asks for) and it reserves
+ * their footprint through [LocalWindowControlsLeadingInset] /
+ * [LocalWindowControlsTrailingInset]. [isClosable] only covers the dialog case
+ * — a close affordance on a surface that is not a window.
+ *
+ * [shape] mirrors the Dart `shape` argument: square by default, rounded on top
+ * for the dialog variant (see [YaruDialogTitleBarDefaults.Shape]) so a bar
+ * capping a rounded surface does not square off its corners.
  */
 private const val EDGE_TOLERANCE_PX = 1f
 
@@ -80,16 +86,9 @@ fun YaruTitleBar(
     titleSpacing: Dp = 16.dp,
     backgroundColor: Color = LocalYaruColorScheme.current.surface,
     style: YaruTitleBarStyle = YaruTitleBarStyle.Normal,
+    shape: Shape = RectangleShape,
     isClosable: Boolean = false,
-    isMaximizable: Boolean = false,
-    isMinimizable: Boolean = false,
-    isRestorable: Boolean = false,
     onClose: (() -> Unit)? = null,
-    onMaximize: (() -> Unit)? = null,
-    onMinimize: (() -> Unit)? = null,
-    onRestore: (() -> Unit)? = null,
-    platform: YaruWindowControlPlatform = YaruWindowControlPlatform.Yaru,
-    buttonSpacing: Dp = 14.dp,
     buttonPadding: PaddingValues = PaddingValues(horizontal = 10.dp),
     showBorder: Boolean = true,
 ) {
@@ -105,7 +104,6 @@ fun YaruTitleBar(
     // `roundToPx()`. Route through the canonical `Dp.sanitise()` foundation
     // helper.
     val safeTitleSpacing = titleSpacing.sanitise()
-    val safeButtonSpacing = buttonSpacing.sanitise()
     val layoutDirection = LocalLayoutDirection.current
     val safeButtonPadding = buttonPadding.coerceNonNegative(layoutDirection)
 
@@ -126,12 +124,9 @@ fun YaruTitleBar(
     // the Dart code which omits the bottom border for `undecorated` / `hidden`.
     val drawBorder = showBorder && style == YaruTitleBarStyle.Normal
 
-    // A windowing layer (Nucleus' `YaruDecoratedWindow`) owns which controls
-    // exist, their order and their side; it hands them over through
-    // [LocalWindowControls] and the Yaru artwork is used to draw them. Without
-    // one, fall back to the callback-driven row below.
-    val showWindowControls = style == YaruTitleBarStyle.Normal &&
-        (isClosable || isMaximizable || isMinimizable || isRestorable)
+    // Dialog-only close affordance; real windows get their controls from the
+    // windowing layer.
+    val showCloseButton = style == YaruTitleBarStyle.Normal && isClosable
 
     // Title text style — `titleLarge.copy(fontSize = 14.sp, fontWeight = W500)`
     // matches `theme.textTheme.titleLarge.copyWith(fontSize: 14, fontWeight: w500)`
@@ -174,7 +169,7 @@ fun YaruTitleBar(
                 } else {
                     Modifier
                 },
-            ).background(safeBackgroundColor)
+            ).background(color = safeBackgroundColor, shape = shape)
             // Dragging the headerbar background moves the window; interactive
             // children opt out by consuming the press. No-op without a
             // windowing layer.
@@ -191,12 +186,12 @@ fun YaruTitleBar(
                     )
                 } else Modifier,
             )
-            // Defensive: when window controls are present, drop the trailing outer padding so the close button reaches the right edge with only WindowControlsRow's own 10dp inner padding (matching Dart `_kYaruTitleBarPadding = 10`). Without this, the symmetric `horizontal = 16dp` outer padding stacked on top of WindowControlsRow's 10dp inset pushed the close button 26dp away from the corner.
+            // Defensive: when the close button is present, drop the trailing outer padding so it reaches the right edge with only its own 10dp inner padding (matching Dart `_kYaruTitleBarPadding = 10`). Without this, the symmetric `horizontal = 16dp` outer padding stacked on top of that 10dp inset pushed the button 26dp away from the corner.
             .padding(
                 // Systems that draw their own controls over the client area
                 // (macOS traffic-lights) need their footprint kept clear.
                 start = safeTitleSpacing + leadingInset,
-                end = (if (showWindowControls) 0.dp else safeTitleSpacing) + trailingInset,
+                end = (if (showCloseButton) 0.dp else safeTitleSpacing) + trailingInset,
             ),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = if (centerTitle) Arrangement.SpaceBetween else Arrangement.Start,
@@ -234,69 +229,28 @@ fun YaruTitleBar(
             Spacer(Modifier.width(8.dp))
             actions()
         }
-        if (showWindowControls) {
+        if (showCloseButton) {
             Spacer(Modifier.width(8.dp))
-            WindowControlsRow(
-                platform = platform,
-                spacing = safeButtonSpacing,
-                padding = safeButtonPadding,
-                isClosable = isClosable,
-                isMaximizable = isMaximizable,
-                isMinimizable = isMinimizable,
-                isRestorable = isRestorable,
-                onClose = onClose,
-                onMaximize = onMaximize,
-                onMinimize = onMinimize,
-                onRestore = onRestore,
+            YaruCloseButton(
+                modifier = Modifier.padding(safeButtonPadding),
+                onPressed = onClose ?: {},
+                enabled = onClose != null,
             )
         }
     }
 }
 
-/**
- * A window title bar — convenience wrapper exposing the standard set of window
- * controls (minimize / maximize / close).
- *
- * Mirrors `YaruWindowTitleBar` in `yaru.dart/lib/src/widgets/yaru_title_bar.dart`.
- */
-@Composable
-fun YaruWindowTitleBar(
-    modifier: Modifier = Modifier,
-    leading: @Composable (() -> Unit)? = null,
-    title: @Composable (() -> Unit)? = null,
-    actions: @Composable (() -> Unit)? = null,
-    centerTitle: Boolean = true,
-    titleSpacing: Dp = 16.dp,
-    backgroundColor: Color = LocalYaruColorScheme.current.surface,
-    style: YaruTitleBarStyle = YaruTitleBarStyle.Normal,
-    isClosable: Boolean = true,
-    isMaximizable: Boolean = true,
-    isMinimizable: Boolean = true,
-    isRestorable: Boolean = false,
-    onClose: (() -> Unit)? = null,
-    onMaximize: (() -> Unit)? = null,
-    onMinimize: (() -> Unit)? = null,
-    onRestore: (() -> Unit)? = null,
-    platform: YaruWindowControlPlatform = YaruWindowControlPlatform.Yaru,
-) {
-    YaruTitleBar(
-        modifier = modifier,
-        leading = leading,
-        title = title,
-        actions = actions,
-        centerTitle = centerTitle,
-        titleSpacing = titleSpacing,
-        backgroundColor = backgroundColor,
-        style = style,
-        isClosable = isClosable,
-        isMaximizable = isMaximizable,
-        isMinimizable = isMinimizable,
-        isRestorable = isRestorable,
-        onClose = onClose,
-        onMaximize = onMaximize,
-        onMinimize = onMinimize,
-        onRestore = onRestore,
-        platform = platform,
+/** Defaults of [YaruDialogTitleBar]. */
+object YaruDialogTitleBarDefaults {
+    /**
+     * Mirrors `YaruDialogTitleBar.defaultShape` — `BorderRadius.vertical(top:
+     * Radius.circular(kYaruWindowRadius))`. The bar caps a rounded dialog
+     * surface, so it rounds its own top corners rather than relying on the
+     * caller to clip it.
+     */
+    val Shape: Shape = RoundedCornerShape(
+        topStart = YaruConstants.WindowRadius,
+        topEnd = YaruConstants.WindowRadius,
     )
 }
 
@@ -314,9 +268,9 @@ fun YaruDialogTitleBar(
     centerTitle: Boolean = true,
     titleSpacing: Dp = 16.dp,
     backgroundColor: Color = LocalYaruColorScheme.current.surface,
+    shape: Shape = YaruDialogTitleBarDefaults.Shape,
     isClosable: Boolean = true,
     onClose: (() -> Unit)? = null,
-    platform: YaruWindowControlPlatform = YaruWindowControlPlatform.Yaru,
 ) {
     YaruTitleBar(
         modifier = modifier,
@@ -327,87 +281,8 @@ fun YaruDialogTitleBar(
         titleSpacing = titleSpacing,
         backgroundColor = backgroundColor,
         style = YaruTitleBarStyle.Normal,
+        shape = shape,
         isClosable = isClosable,
-        isMaximizable = false,
-        isMinimizable = false,
-        isRestorable = false,
         onClose = onClose,
-        platform = platform,
     )
 }
-
-@Composable
-private fun WindowControlsRow(
-    platform: YaruWindowControlPlatform,
-    spacing: Dp,
-    padding: PaddingValues,
-    isClosable: Boolean,
-    isMaximizable: Boolean,
-    isMinimizable: Boolean,
-    isRestorable: Boolean,
-    onClose: (() -> Unit)?,
-    onMaximize: (() -> Unit)?,
-    onMinimize: (() -> Unit)?,
-    onRestore: (() -> Unit)?,
-) {
-    Row(
-        modifier = Modifier.padding(padding),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        var first = true
-        if (isMinimizable) {
-            if (!first) Spacer(Modifier.width(spacing))
-            first = false
-            YaruWindowControl(
-                type = YaruWindowControlType.Minimize,
-                platform = platform,
-                onTap = onMinimize,
-            )
-        }
-        if (isRestorable) {
-            if (!first) Spacer(Modifier.width(spacing))
-            first = false
-            YaruWindowControl(
-                type = YaruWindowControlType.Restore,
-                platform = platform,
-                onTap = onRestore,
-            )
-        }
-        if (isMaximizable) {
-            if (!first) Spacer(Modifier.width(spacing))
-            first = false
-            YaruWindowControl(
-                type = YaruWindowControlType.Maximize,
-                platform = platform,
-                onTap = onMaximize,
-            )
-        }
-        if (isClosable) {
-            if (!first) Spacer(Modifier.width(spacing))
-            // Mirrors `yaru_title_bar.dart` line 325-335: when only close is
-            // visible (no max/restore), wrap in a topRight rounded clip using
-            // `kYaruWindowRadius` so the dialog corner stays round.
-            val onlyClose = !isMaximizable && !isRestorable
-            val clipModifier = if (onlyClose) {
-                Modifier.clip(
-                    RoundedCornerShape(
-                        topStart = 0.dp,
-                        topEnd = YaruConstants.WindowRadius,
-                        bottomEnd = 0.dp,
-                        bottomStart = 0.dp,
-                    ),
-                )
-            } else {
-                Modifier
-            }
-            Box(modifier = clipModifier) {
-                YaruWindowControl(
-                    type = YaruWindowControlType.Close,
-                    platform = platform,
-                    onTap = onClose,
-                )
-            }
-        }
-    }
-}
-

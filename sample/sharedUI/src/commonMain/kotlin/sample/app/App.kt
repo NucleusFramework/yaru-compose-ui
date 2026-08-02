@@ -42,6 +42,7 @@ import dev.nucleusframework.yarucompose.themes.yaruSystemInDarkMode
 import dev.nucleusframework.yarucompose.themes.isHighContrast
 import dev.nucleusframework.yarucompose.themes.isLight
 import dev.nucleusframework.yarucompose.themes.scale
+import dev.nucleusframework.yarucompose.widgets.YaruButtonVariant
 import dev.nucleusframework.yarucompose.widgets.YaruColorDisk
 import dev.nucleusframework.yarucompose.widgets.YaruIconButton
 import dev.nucleusframework.yarucompose.widgets.YaruListTile
@@ -92,7 +93,6 @@ import sample.app.pages.SplitButtonPage
 import sample.app.pages.SwitchPage
 import sample.app.pages.TabBarPage
 import sample.app.pages.TilePage
-import sample.app.pages.WindowControlsPage
 
 /**
  * One entry in the master list, mirroring `PageItem` from
@@ -301,12 +301,6 @@ private val SamplePages: List<SamplePage> = listOf(
         title = "YaruTile",
         iconGlyph = YaruIcons.unordered_list,
     ) { TilePage() },
-    // example_page_items.dart:327-333.
-    SamplePage(
-        title = "YaruWindowControl",
-        iconGlyph = YaruIcons.window_top_bar,
-        selectedIconGlyph = YaruIcons.window_top_bar_filled,
-    ) { WindowControlsPage() },
 ).sortedBy { it.title }
 
 /**
@@ -323,7 +317,8 @@ private enum class ThemeModeChoice { System, Light, Dark }
  */
 private class ExampleSettings(
     val themeMode: MutableState<ThemeModeChoice>,
-    val variant: MutableState<YaruVariant>,
+    /** `null` follows the desktop accent — the "System" row of the picker. */
+    val variant: MutableState<YaruVariant?>,
     val highContrast: MutableState<Boolean>,
     val compactMode: MutableState<Boolean>,
     val rtl: MutableState<Boolean>,
@@ -331,14 +326,12 @@ private class ExampleSettings(
 
 @Composable
 private fun rememberExampleSettings(): ExampleSettings {
-    // Follow the desktop accent by default, like GNOME's own apps; Orange is
-    // Ubuntu's fallback where the platform exposes no accent. The picker below
-    // still overrides it.
-    val systemVariant = yaruSystemAccentVariant()
-    return remember(systemVariant) {
+    return remember {
         ExampleSettings(
             themeMode = mutableStateOf(ThemeModeChoice.System),
-            variant = mutableStateOf(systemVariant ?: YaruVariant.Orange),
+            // Follow the desktop accent by default, like GNOME's own apps —
+            // the picker's "System" row comes back to it.
+            variant = mutableStateOf(null),
             highContrast = mutableStateOf(false),
             compactMode = mutableStateOf(false),
             rtl = mutableStateOf(false),
@@ -360,6 +353,10 @@ fun App() {
     // `isSystemInDarkTheme()` is blind to the desktop setting, so this goes
     // through Yaru, which reads it natively there.
     val systemDark = yaruSystemInDarkMode()
+    // `null` variant = follow the desktop accent; Orange is Ubuntu's fallback
+    // where the platform exposes none.
+    val systemVariant = yaruSystemAccentVariant() ?: YaruVariant.Orange
+    val variant = settings.variant.value ?: systemVariant
     val isDark = when (settings.themeMode.value) {
         ThemeModeChoice.System -> systemDark
         ThemeModeChoice.Light -> false
@@ -369,7 +366,7 @@ fun App() {
     YaruTheme(
         isDark = isDark,
         highContrast = settings.highContrast.value,
-        variant = settings.variant.value,
+        variant = variant,
     ) {
         // RTL is propagated via LocalLayoutDirection so every descendant
         // (including positioning of master/detail panes) flips together —
@@ -613,29 +610,56 @@ private fun VariantPicker(settings: ExampleSettings) {
     //  - `PopupMenuItem.onTap` writes the variant on the model.
     //  - The inner `ColorDisk` is rendered without `onPressed`, so the row tap
     //    drives both selection and popup dismissal — no nested click handler.
+    //  - Dart's trigger is `PopupMenuButton.icon`, a bare icon tinted with the
+    //    primary color: no button border.
+    // Divergence: a leading "System" row, absent from the Dart example, so the
+    // picker can hand the accent back to the desktop after an explicit choice.
     val selectedVariant = settings.variant.value
-    val items = YaruVariant.Accents.map { variant ->
-        YaruPopupMenuEntry(
-            value = variant,
-            label = {
-                // example_theme_button.dart L29-L37: Row holds [ColorDisk, Text] with no
-                // separator — the disk's built-in 8.dp padding (color_disk.dart L20) is
-                // the only gap between the disk and the label.
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    YaruColorDisk(
-                        color = variant.color,
-                        selected = variant == selectedVariant,
-                        onPressed = null,
-                    )
-                    YaruText(variant.name)
-                }
-            },
+    val systemVariant = yaruSystemAccentVariant() ?: YaruVariant.Orange
+    val items = buildList {
+        add(
+            YaruPopupMenuEntry<YaruVariant?>(
+                value = null,
+                label = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        YaruColorDisk(
+                            color = systemVariant.color,
+                            selected = selectedVariant == null,
+                            onPressed = null,
+                        )
+                        YaruText("System")
+                    }
+                },
+            ),
         )
+        YaruVariant.Accents.forEach { variant ->
+            add(
+                YaruPopupMenuEntry<YaruVariant?>(
+                    value = variant,
+                    label = {
+                        // example_theme_button.dart L29-L37: Row holds [ColorDisk, Text] with no
+                        // separator — the disk's built-in 8.dp padding (color_disk.dart L20) is
+                        // the only gap between the disk and the label.
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            YaruColorDisk(
+                                color = variant.color,
+                                selected = variant == selectedVariant,
+                                onPressed = null,
+                            )
+                            YaruText(variant.name)
+                        }
+                    },
+                ),
+            )
+        }
     }
     YaruPopupMenuButton(
         items = items,
         onSelected = { settings.variant.value = it },
         showArrow = false,
+        variant = YaruButtonVariant.Text,
+        // The `Text` variant already tints its content with `scheme.primary`,
+        // matching Dart's explicit `color: Theme.of(context).primaryColor`.
         label = { YaruIcon(YaruIcons.color_select) },
     )
 }

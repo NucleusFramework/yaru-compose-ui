@@ -25,7 +25,7 @@ import kotlinx.coroutines.launch
  * components in `common_themes.dart` apply their own state-specific values
  * (e.g. IconButton/ToggleButtons `hoverColor: onSurface @ 0.05`, RadioButton
  * `overlayColor: onSurface @ 0.05`, TabBar `overlayColor: onSurface @ 0.05`).
- * Components that mirror those exact values (YaruTabBar, YaruWindowControl)
+ * Components that mirror those exact values (YaruTabBar)
  * paint their overlay manually and do not consume this indication.
  *
  * For the generic fall-through case we use the common desktop state-layer
