@@ -185,7 +185,12 @@ fun YaruSearchField(
                     keyboardActions = KeyboardActions(onSearch = { onSubmitted?.invoke(value) }),
                     interactionSource = interactionSource,
                     // Defensive: anchor the FocusRequester on the BasicTextField itself — autoFocus and post-clear refocus must target the input, not the surrounding decoration Box.
-                    modifier = Modifier.focusRequester(focusRequester),
+                    // `fillMaxWidth` keeps the I-beam hover icon and
+                    // click-to-caret active across the whole field — see
+                    // YaruTextField for details.
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester),
                 )
                 // Defensive: treat an empty placeholder as "absent" — otherwise we would spin up a Crossfade whose only payload is a no-text `YaruText`, allocating animation state for nothing.
                 // Defensive: also reject whitespace-only placeholders — they render as invisible hints (a blank gap) while still costing a Crossfade.
