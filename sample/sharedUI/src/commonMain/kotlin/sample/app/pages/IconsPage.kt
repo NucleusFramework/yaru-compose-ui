@@ -43,6 +43,7 @@ import dev.nucleusframework.yarucompose.widgets.YaruTabBar
 import dev.nucleusframework.yarucompose.widgets.YaruText
 import dev.nucleusframework.yarucompose.widgets.YaruTextButton
 import dev.nucleusframework.yarucompose.widgets.YaruTitleBar
+import sample.app.gallery.CodeBlock
 
 /**
  * Showcase of every glyph in `YaruIcons` and `YaruFreedesktopIcons`.
@@ -204,28 +205,10 @@ private fun IconDetailDialog(entry: IconCatalogEntry, onDismiss: () -> Unit) {
                         }
                     }
                     Spacer(Modifier.height(16.dp))
-                    // Usage chip — mirrors `IconUsage(label: true)`.
-                    Row(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        YaruText(text = "Usage: ", style = typography.bodyLarge)
-                        Spacer(Modifier.width(8.dp))
-                        Box(
-                            modifier = Modifier
-                                .background(
-                                    scheme.onSurface.copy(alpha = 0.08f),
-                                    RoundedCornerShape(4.dp),
-                                )
-                                .padding(horizontal = 8.dp, vertical = 3.dp),
-                        ) {
-                            YaruText(
-                                text = entry.usage,
-                                style = typography.bodyLarge,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        }
+                    // Mirrors `IconUsage(label: true)`, but as a copyable snippet
+                    // so the catalog doubles as a code source like the other pages.
+                    Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        CodeBlock(code = "YaruIcon(${entry.usage})")
                     }
                 }
             }

@@ -1,65 +1,56 @@
 package sample.app.pages
 
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import dev.nucleusframework.yarucompose.themes.YaruConstants
 import dev.nucleusframework.yarucompose.widgets.YaruCircularProgressIndicator
 import dev.nucleusframework.yarucompose.widgets.YaruLinearProgressIndicator
-import dev.nucleusframework.yarucompose.widgets.YaruScrollViewUndershoot
+import sample.app.gallery.ExampleCard
+import sample.app.gallery.GalleryExample
+import sample.app.gallery.GalleryPage
+import sample.app.gallery.generated.GallerySources
 
-/**
- * Mirrors `yaru.dart/example/lib/pages/progress_indicator_page.dart`.
- *
- * Dart renders four items: indeterminate circular, circular at 0.75,
- * indeterminate linear, linear at 0.75 — each wrapped with `top: 25` padding
- * inside a `ListView`.
- *
- * Each indicator gets its own `Box` parent — this guarantees the lazy item
- * has bounded height even when the indicator's intrinsic measurement is
- * zero (e.g. the indeterminate circular at `Animatable = 0` on first frame).
- * Without the wrapper, items above measured at 0dp and the page rendered as
- * an empty viewport.
- */
+/** Mirrors `yaru.dart/example/lib/pages/progress_indicator_page.dart`. */
 @Composable
 fun ProgressIndicatorPage() {
-    val scrollState = rememberLazyListState()
-    YaruScrollViewUndershoot(
-        scrollableState = scrollState,
-        modifier = Modifier.fillMaxSize(),
+    GalleryPage(description = "Determinate and indeterminate activity feedback.") {
+        ExampleCard(
+            title = "Circular",
+            description = "Omitting `progress` gives the indeterminate spinner.",
+            sourceCode = GallerySources.CircularProgressExample,
+        ) { CircularProgressExample() }
+        ExampleCard(
+            title = "Linear",
+            sourceCode = GallerySources.LinearProgressExample,
+        ) { LinearProgressExample() }
+    }
+}
+
+@GalleryExample("YaruProgressIndicator", "Circular")
+@Composable
+private fun CircularProgressExample() {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(24.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        LazyColumn(
-            state = scrollState,
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(YaruConstants.PagePadding),
-        ) {
-            // `YaruCircularProgressIndicator()` (progress_indicator_page.dart:17).
-            item {
-                YaruCircularProgressIndicator(modifier = Modifier.padding(top = 25.dp))
-            }
-            // `YaruCircularProgressIndicator(value: .75)` (progress_indicator_page.dart:21).
-            item {
-                YaruCircularProgressIndicator(
-                    progress = 0.75f,
-                    modifier = Modifier.padding(top = 25.dp),
-                )
-            }
-            // `YaruLinearProgressIndicator()` (progress_indicator_page.dart:25).
-            item {
-                YaruLinearProgressIndicator(modifier = Modifier.padding(top = 25.dp))
-            }
-            // `YaruLinearProgressIndicator(value: .75)` (progress_indicator_page.dart:29).
-            item {
-                YaruLinearProgressIndicator(
-                    progress = 0.75f,
-                    modifier = Modifier.padding(top = 25.dp),
-                )
-            }
-        }
+        YaruCircularProgressIndicator()
+        YaruCircularProgressIndicator(progress = 0.75f)
+    }
+}
+
+@GalleryExample("YaruProgressIndicator", "Linear")
+@Composable
+private fun LinearProgressExample() {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(24.dp),
+    ) {
+        YaruLinearProgressIndicator()
+        YaruLinearProgressIndicator(progress = 0.75f)
     }
 }

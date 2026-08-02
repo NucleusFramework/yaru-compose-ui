@@ -1,91 +1,116 @@
 package sample.app.pages
 
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.runtime.toMutableStateList
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import dev.nucleusframework.yarucompose.themes.YaruConstants
 import dev.nucleusframework.yarucompose.widgets.YaruCheckButton
 import dev.nucleusframework.yarucompose.widgets.YaruCheckbox
 import dev.nucleusframework.yarucompose.widgets.YaruCheckboxListTile
-import dev.nucleusframework.yarucompose.widgets.YaruHorizontalDivider
-import dev.nucleusframework.yarucompose.widgets.YaruScrollViewUndershoot
 import dev.nucleusframework.yarucompose.widgets.YaruText
+import sample.app.gallery.ExampleCard
+import sample.app.gallery.GalleryExample
+import sample.app.gallery.GalleryPage
+import sample.app.gallery.SectionHeader
+import sample.app.gallery.generated.GallerySources
 
-/**
- * Mirrors `yaru.dart/example/lib/pages/checkbox_page.dart`. Each section cycles
- * through `[false, null, true]` and pairs an interactive checkbox with a
- * disabled one (tristate everywhere).
- */
+/** Mirrors `yaru.dart/example/lib/pages/checkbox_page.dart`. */
 @Composable
 fun CheckboxPage() {
-    val checkboxValues: SnapshotStateList<Boolean?> =
-        remember { listOf<Boolean?>(false, null, true).toMutableStateList() }
-    val buttonValues: SnapshotStateList<Boolean?> =
-        remember { listOf<Boolean?>(false, null, true).toMutableStateList() }
-    val listTileValues: SnapshotStateList<Boolean?> =
-        remember { listOf<Boolean?>(false, null, true).toMutableStateList() }
+    GalleryPage(description = "A binary — or tristate — toggle for a single setting.") {
+        SectionHeader("Bare control")
+        ExampleCard(
+            title = "YaruCheckbox",
+            description = "Unchecked, mixed and checked.",
+            sourceCode = GallerySources.CheckboxExample,
+        ) { CheckboxExample() }
+        ExampleCard(
+            title = "Tristate",
+            description = "`tristate` adds the mixed state to the tap cycle.",
+            sourceCode = GallerySources.CheckboxTristateExample,
+        ) { CheckboxTristateExample() }
+        ExampleCard(
+            title = "Disabled",
+            sourceCode = GallerySources.CheckboxDisabledExample,
+        ) { CheckboxDisabledExample() }
 
-    val scrollState = rememberLazyListState()
-    YaruScrollViewUndershoot(
-        scrollableState = scrollState,
-        modifier = Modifier.fillMaxSize(),
+        SectionHeader("Labelled")
+        ExampleCard(
+            title = "YaruCheckButton",
+            sourceCode = GallerySources.CheckButtonExample,
+        ) { CheckButtonExample() }
+        ExampleCard(
+            title = "YaruCheckboxListTile",
+            sourceCode = GallerySources.CheckboxListTileExample,
+        ) { CheckboxListTileExample() }
+    }
+}
+
+@GalleryExample("YaruCheckbox", "Basic")
+@Composable
+private fun CheckboxExample() {
+    var checked by remember { mutableStateOf<Boolean?>(false) }
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        LazyColumn(
-            state = scrollState,
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(YaruConstants.PagePadding),
-        ) {
-            // Bare checkbox: interactive + disabled, both tristate.
-            items(count = checkboxValues.size) { index ->
-                Row {
-                    YaruCheckbox(
-                        value = checkboxValues[index],
-                        onChanged = { checkboxValues[index] = it },
-                        tristate = true,
-                    )
-                    Spacer(Modifier.width(10.dp))
-                    YaruCheckbox(
-                        value = checkboxValues[index],
-                        onChanged = null,
-                        tristate = true,
-                    )
-                }
-                Spacer(Modifier.height(10.dp))
-            }
-            item { YaruHorizontalDivider() }
+        YaruCheckbox(value = checked, onChanged = { checked = it })
+        YaruCheckbox(value = null, onChanged = {}, tristate = true)
+        YaruCheckbox(value = true, onChanged = {})
+    }
+}
 
-            // YaruCheckButton — desktop-style label.
-            items(count = buttonValues.size) { index ->
-                YaruCheckButton(
-                    value = buttonValues[index],
-                    onChanged = { buttonValues[index] = it },
-                    title = { YaruText("YaruCheckButton") },
-                    tristate = true,
-                )
-                Spacer(Modifier.height(10.dp))
-            }
-            item { YaruHorizontalDivider() }
+@GalleryExample("YaruCheckbox", "Tristate")
+@Composable
+private fun CheckboxTristateExample() {
+    var value by remember { mutableStateOf<Boolean?>(null) }
+    YaruCheckbox(value = value, onChanged = { value = it }, tristate = true)
+}
 
-            // YaruCheckboxListTile — tappable row with the checkbox as leading.
-            items(count = listTileValues.size) { index ->
-                YaruCheckboxListTile(
-                    value = listTileValues[index],
-                    onChanged = { listTileValues[index] = it },
-                    title = { YaruText("YaruCheckboxListTile") },
-                    tristate = true,
-                )
-            }
-        }
+@GalleryExample("YaruCheckbox", "Disabled")
+@Composable
+private fun CheckboxDisabledExample() {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        YaruCheckbox(value = false, onChanged = null)
+        YaruCheckbox(value = null, onChanged = null, tristate = true)
+        YaruCheckbox(value = true, onChanged = null)
+    }
+}
+
+@GalleryExample("YaruCheckbox", "Check button")
+@Composable
+private fun CheckButtonExample() {
+    var value by remember { mutableStateOf<Boolean?>(false) }
+    YaruCheckButton(
+        value = value,
+        onChanged = { value = it },
+        title = { YaruText("Enable notifications") },
+        tristate = true,
+    )
+}
+
+@GalleryExample("YaruCheckbox", "Checkbox list tile")
+@Composable
+private fun CheckboxListTileExample() {
+    var value by remember { mutableStateOf<Boolean?>(true) }
+    Column(modifier = Modifier.fillMaxWidth()) {
+        YaruCheckboxListTile(
+            value = value,
+            onChanged = { value = it },
+            title = { YaruText("YaruCheckboxListTile") },
+            subtitle = { YaruText("With a subtitle") },
+            tristate = true,
+        )
     }
 }

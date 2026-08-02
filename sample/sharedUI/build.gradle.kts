@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.android.kmp.library)
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.ksp)
 }
 
 kotlin {
@@ -35,6 +36,8 @@ kotlin {
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
             implementation(libs.ktor.client.core)
+            // Kotlin syntax colouring for the gallery `CodeBlock`.
+            implementation(libs.highlights)
         }
         // Per-target Ktor engine (Coil's ktor3 fetcher is engine-agnostic, the
         // host module must wire one in). CIO covers JVM + Android; Darwin
@@ -51,6 +54,23 @@ kotlin {
             baseName = "ComposeApp"
             isStatic = true
         }
+    }
+
+    // `GallerySources` is generated once from commonMain and shared by every target.
+    sourceSets.commonMain {
+        kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
+    }
+}
+
+dependencies {
+    add("kspCommonMainMetadata", project(":sample:galleryKsp"))
+}
+
+// The generated sources live in commonMain, so every compilation — including the
+// per-target ones KSP does not run for — must wait for the metadata pass.
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().configureEach {
+    if (name != "kspCommonMainKotlinMetadata") {
+        dependsOn("kspCommonMainKotlinMetadata")
     }
 }
 android {

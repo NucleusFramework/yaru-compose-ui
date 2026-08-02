@@ -37,10 +37,12 @@ import dev.nucleusframework.yarucompose.icons.YaruIcons
 import dev.nucleusframework.yarucompose.themes.LocalYaruTypography
 import dev.nucleusframework.yarucompose.themes.YaruConstants
 import dev.nucleusframework.yarucompose.widgets.YaruCircularProgressIndicator
+import dev.nucleusframework.yarucompose.widgets.YaruDialog
 import dev.nucleusframework.yarucompose.widgets.YaruSearchField
 import dev.nucleusframework.yarucompose.widgets.YaruTab
 import dev.nucleusframework.yarucompose.widgets.YaruTabBar
 import dev.nucleusframework.yarucompose.widgets.YaruText
+import sample.app.gallery.CodeBlock
 
 // Mirrors Dart `_urlPrefix` / `_urlSuffix` from `full_color_icons_page.dart:545-547`.
 private const val IconUrlPrefix =
@@ -61,6 +63,7 @@ fun FullColorIconsPage() {
     val categories = remember { iconDirsToIconNames.entries.toList() }
     var selectedTab by remember { mutableIntStateOf(1.coerceAtMost(categories.lastIndex)) }
     var query by remember { mutableStateOf("") }
+    var selected by remember { mutableStateOf<String?>(null) }
     val currentDir = categories[selectedTab].key
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -103,14 +106,28 @@ fun FullColorIconsPage() {
             modifier = Modifier.fillMaxSize(),
         ) {
             items(filtered, key = { it }) { name ->
-                FullColorIconCell(name = name, dir = currentDir)
+                FullColorIconCell(
+                    name = name,
+                    dir = currentDir,
+                    onClick = { selected = name },
+                )
             }
+        }
+    }
+
+    selected?.let { name ->
+        YaruDialog(
+            onDismissRequest = { selected = null },
+            title = { YaruText(name) },
+            contentPadding = PaddingValues(16.dp),
+        ) {
+            CodeBlock(code = "AsyncImage(model = \"$IconUrlPrefix$currentDir/$name$IconUrlSuffix\")")
         }
     }
 }
 
 @Composable
-private fun FullColorIconCell(name: String, dir: String) {
+private fun FullColorIconCell(name: String, dir: String, onClick: () -> Unit) {
     val shape = RoundedCornerShape(YaruConstants.ButtonRadius)
     val url = remember(name, dir) { "$IconUrlPrefix$dir/$name$IconUrlSuffix" }
     val context = LocalPlatformContext.current
@@ -125,7 +142,7 @@ private fun FullColorIconCell(name: String, dir: String) {
             .fillMaxWidth()
             .height(100.dp)
             .clip(shape)
-            .clickable {}
+            .clickable(onClick = onClick)
             .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,

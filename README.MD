@@ -10,6 +10,34 @@ Kotlin Multiplatform Library
  - JavaScript: `./gradlew :sample:composeApp:jsBrowserDevelopmentRun`
  - Wasm: `./gradlew :sample:composeApp:wasmJsBrowserDevelopmentRun`
 
+### Sample gallery
+
+Every page in the sample app shows a live preview next to the exact source that
+produced it. The snippet is not written by hand: `:sample:galleryKsp` reads each
+`@GalleryExample` composable back from disk at compile time and emits its body
+as `GallerySources.<functionName>`, so preview and code can never drift apart.
+
+To add an example:
+
+```kotlin
+@GalleryExample("YaruSwitch", "States")
+@Composable
+private fun SwitchStatesExample() {
+    var checked by remember { mutableStateOf(true) }
+    YaruSwitch(checked = checked, onCheckedChange = { checked = it })
+}
+
+// …then render it from the page:
+ExampleCard(
+    title = "States",
+    sourceCode = GallerySources.SwitchStatesExample,
+) { SwitchStatesExample() }
+```
+
+Keep the example self-contained — its body is what the user copies. Function
+names must be unique across the module; the processor fails the build on
+collisions.
+
 ### Publish to MavenLocal
 
 1) Run `./gradlew :yaru:publishToMavenLocal`

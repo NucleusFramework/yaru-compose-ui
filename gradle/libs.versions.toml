@@ -10,6 +10,8 @@ kotlinx-datetime = "0.7.1"
 androidx-activityCompose = "1.12.0"
 ktor = "3.4.3"
 coil = "3.5.0-beta01"
+ksp = "2.3.1"
+highlights = "1.1.0"
 
 [libraries]
 nucleus-decorated-window-tao = { module = "dev.nucleusframework:nucleus.decorated-window-tao", version.ref = "nucleus" }
@@ -34,6 +36,9 @@ ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "kto
 ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktor" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
+# Kotlin syntax highlighting for the gallery code blocks.
+highlights = { module = "dev.snipme:highlights", version.ref = "highlights" }
+ksp-symbol-processing-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
 
 [plugins]
 nucleus = { id = "dev.nucleusframework", version.ref = "nucleus" }
@@ -46,3 +51,4 @@ compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

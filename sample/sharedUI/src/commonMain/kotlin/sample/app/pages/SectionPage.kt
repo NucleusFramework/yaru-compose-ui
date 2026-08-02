@@ -2,56 +2,45 @@ package sample.app.pages
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.nucleusframework.yarucompose.icons.YaruIcon
 import dev.nucleusframework.yarucompose.icons.YaruIcons
-import dev.nucleusframework.yarucompose.themes.YaruConstants
 import dev.nucleusframework.yarucompose.widgets.YaruCircularProgressIndicator
 import dev.nucleusframework.yarucompose.widgets.YaruListTile
 import dev.nucleusframework.yarucompose.widgets.YaruSection
 import dev.nucleusframework.yarucompose.widgets.YaruText
+import sample.app.gallery.ExampleCard
+import sample.app.gallery.GalleryExample
+import sample.app.gallery.GalleryPage
+import sample.app.gallery.generated.GallerySources
 
-private val MinSectionWidth = 400.dp
-
+/** Mirrors `yaru.dart/example/lib/pages/section_page.dart`. */
 @Composable
 fun SectionPage() {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(YaruConstants.PagePadding),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
-    ) {
-        item { DummySection() }
-        item {
-            YaruSection(modifier = Modifier.width(MinSectionWidth)) {
-                Column {
-                    repeat(10) {
-                        YaruListTile(
-                            title = { YaruText("Title") },
-                            subtitle = { YaruText("Subtitle") },
-                            leading = { YaruIcon(YaruIcons.music_note) },
-                            trailing = { YaruIcon(YaruIcons.information) },
-                        )
-                    }
-                }
-            }
-        }
+    GalleryPage(description = "A bordered group of rows, optionally under a headline.") {
+        ExampleCard(
+            title = "With a headline",
+            description = "The headline slot takes arbitrary content, not just a label.",
+            sourceCode = GallerySources.SectionHeadlineExample,
+        ) { SectionHeadlineExample() }
+        ExampleCard(
+            title = "Without a headline",
+            sourceCode = GallerySources.SectionPlainExample,
+        ) { SectionPlainExample() }
     }
 }
 
+@GalleryExample("YaruSection", "Headline")
 @Composable
-private fun DummySection() {
+private fun SectionHeadlineExample() {
     YaruSection(
-        modifier = Modifier.width(MinSectionWidth),
+        modifier = Modifier.fillMaxWidth(),
         headline = {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -59,7 +48,6 @@ private fun DummySection() {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 YaruText("Headline")
-                // `YaruCircularProgressIndicator(strokeWidth: 3)` (section_page.dart:54).
                 YaruCircularProgressIndicator(
                     modifier = Modifier.size(20.dp),
                     strokeWidth = 3.dp,
@@ -70,9 +58,25 @@ private fun DummySection() {
         YaruListTile(
             title = { YaruText("Title") },
             subtitle = { YaruText("Subtitle") },
-            // `Icon(YaruIcons.music_note)` (section_page.dart:30, 62).
             leading = { YaruIcon(YaruIcons.music_note) },
             trailing = { YaruIcon(YaruIcons.information) },
         )
+    }
+}
+
+@GalleryExample("YaruSection", "Plain")
+@Composable
+private fun SectionPlainExample() {
+    YaruSection(modifier = Modifier.fillMaxWidth()) {
+        Column {
+            repeat(4) {
+                YaruListTile(
+                    title = { YaruText("Title") },
+                    subtitle = { YaruText("Subtitle") },
+                    leading = { YaruIcon(YaruIcons.music_note) },
+                    trailing = { YaruIcon(YaruIcons.information) },
+                )
+            }
+        }
     }
 }

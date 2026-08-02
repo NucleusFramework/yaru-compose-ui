@@ -33,6 +33,7 @@ dependencyResolutionManagement {
     }
 }
 include(":yaru")
+include(":sample:galleryKsp")
 include(":sample:sharedUI")
 include(":sample:androidApp")
 include(":sample:desktopApp")
