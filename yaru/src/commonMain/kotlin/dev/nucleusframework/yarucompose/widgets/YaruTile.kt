@@ -24,7 +24,7 @@ enum class YaruTileStyle { Normal, Banner }
 
 /**
  * A compact list-tile-like row with leading, title, subtitle, and trailing
- * slots. Foundation-only — no Material3 dependency.
+ * slots. Foundation-only.
  *
  * Mirrors `yaru.dart/lib/src/widgets/yaru_tile.dart` (the deprecated
  * `YaruTile`). For new code prefer [YaruListTile].

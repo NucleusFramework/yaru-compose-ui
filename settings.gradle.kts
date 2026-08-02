@@ -33,7 +33,6 @@ dependencyResolutionManagement {
     }
 }
 include(":yaru")
-include(":yaru-material3")
 include(":sample:sharedUI")
 include(":sample:androidApp")
 include(":sample:desktopApp")

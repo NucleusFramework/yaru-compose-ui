@@ -33,11 +33,11 @@ import dev.nucleusframework.yarucompose.widgets.YaruTabBar
  *      • title: `YaruDialogTitleBar` containing the option button + 500 dp tab bar
  *      • children: `SizedBox(width: 600, height: 400, child: TabBarView)`
  *
- * Material `SimpleDialog` defaults applied here:
+ * Flutter `SimpleDialog` defaults applied here:
  *  - `contentPadding`: `EdgeInsets.fromLTRB(0, 12, 0, 16)` around the children.
  *  - Surface chrome (`_createDialogTheme`, common_themes.dart:318-330):
  *    14 dp window radius, `_createMenuBg` background, dark/HC border,
- *    Material `_DialogDefaultsM3.elevation = 6`. All provided by [YaruDialogSurface].
+ *    `_DialogDefaultsM3.elevation = 6`. All provided by [YaruDialogSurface].
  *  - The dialog has no max width by default in Flutter, so we pass
  *    `maxWidth = null` to let the 600 dp body size the dialog.
  */
@@ -83,7 +83,7 @@ fun TabBarPage() {
                 )
                 // `SizedBox(width: 600, height: 400, child: TabBarView(...))` (lines 63-74),
                 // wrapped in `SimpleDialog`'s default `contentPadding` of
-                // `EdgeInsets.fromLTRB(0, 12, 0, 16)` (material/dialog.dart).
+                // `EdgeInsets.fromLTRB(0, 12, 0, 16)` (Flutter's dialog.dart).
                 Box(
                     modifier = Modifier.padding(top = 12.dp, bottom = 16.dp),
                 ) {

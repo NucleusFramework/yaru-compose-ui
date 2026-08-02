@@ -43,7 +43,7 @@ private const val CircleThird = Turn / 3f // from yaru_circular_progress_indicat
 private const val StartAngleDeg = -90f // from yaru_circular_progress_indicator.dart: _kStartAngle = -math.pi / 2
 
 /**
- * Yaru-flavored circular progress indicator — Canvas-painted, no Material3.
+ * Yaru-flavored circular progress indicator — Canvas-painted, foundation-only.
  *
  * Mirrors `_DeterminateYaruCircularProgressIndicatorPainter` and the
  * indeterminate state machine from

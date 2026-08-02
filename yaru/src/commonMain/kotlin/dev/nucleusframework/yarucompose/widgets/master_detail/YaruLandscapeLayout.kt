@@ -71,7 +71,7 @@ fun YaruLandscapeLayout(
             }
         },
         page = {
-            // Detail page background mirrors `Material(color: surface)` from
+            // Detail page background mirrors the `color: surface` surface from
             // `YaruDetailPage`. Animate index changes with vertical slides per
             // `landscapeTransitions = vertical` in yaru.dart's theme fallback.
             Box(modifier = Modifier.fillMaxSize().background(scheme.surface)) {

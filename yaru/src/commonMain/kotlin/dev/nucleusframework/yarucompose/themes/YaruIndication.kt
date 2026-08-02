@@ -17,7 +17,7 @@ import dev.nucleusframework.yarucompose.foundation.sanitiseColor
 import kotlinx.coroutines.launch
 
 /**
- * Yaru-flavored [Indication] — replaces Material's ripple (`splashFactory:
+ * Yaru-flavored [Indication] — replaces the stock ripple (`splashFactory:
  * NoSplash.splashFactory` in `yaru.dart/lib/src/themes/common_themes.dart`)
  * with a flat state-layer overlay.
  *
@@ -28,7 +28,7 @@ import kotlinx.coroutines.launch
  * Components that mirror those exact values (YaruTabBar, YaruWindowControl)
  * paint their overlay manually and do not consume this indication.
  *
- * For the generic fall-through case we use the Material 3 state-layer
+ * For the generic fall-through case we use the common desktop state-layer
  * defaults (`onSurfaceVariant @ 0.08` for hover/focus, `0.12` for press) —
  * close to Yaru's flat-overlay feel without per-component overrides:
  *

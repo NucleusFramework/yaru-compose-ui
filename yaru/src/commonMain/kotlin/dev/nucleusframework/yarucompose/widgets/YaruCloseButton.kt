@@ -13,8 +13,8 @@ import dev.nucleusframework.yarucompose.themes.YaruConstants
 private val CloseButtonSize = 32.dp
 
 /**
- * Small icon button used to close a window or dismiss a dialog. Foundation-
- * only, no Material3 dependency.
+ * Small icon button used to close a window or dismiss a dialog.
+ * Foundation-only.
  *
  * Mirrors `yaru.dart/lib/src/widgets/yaru_close_button.dart`: the Dart
  * implementation passes `iconSize: _kCloseButtonSize = 32` to [YaruIconButton],

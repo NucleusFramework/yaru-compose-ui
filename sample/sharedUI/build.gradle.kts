@@ -28,7 +28,6 @@ kotlin {
             api(compose.foundation)
             implementation(compose.components.resources)
             implementation(project(":yaru"))
-            implementation(project(":yaru-material3"))
             implementation(libs.kotlinx.datetime)
             // Coil 3 + Ktor 3 — used by FullColorIconsPage to fetch the
             // Yaru icon PNG previews from raw.githubusercontent.com, mirroring

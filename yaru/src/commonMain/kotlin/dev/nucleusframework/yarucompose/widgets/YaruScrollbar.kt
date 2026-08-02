@@ -44,14 +44,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
-// All values mirror Flutter's defaults (material/scrollbar.dart, widgets/scrollbar.dart)
+// All values mirror Flutter's defaults (scrollbar.dart, widgets/scrollbar.dart)
 // composed with Yaru's `ScrollbarThemeData` overrides
 // (yaru.dart/lib/src/themes/common_themes.dart:783-793).
 //
 // Yaru theme:
 //   mainAxisMargin: 2.0, crossAxisMargin: 2.0,
 //   thickness: { hovered/dragged/focused/pressed: 8, any: 4 }
-// Material defaults left untouched: radius 8, minThumbLength 48, fade 300/600 ms,
+// Framework defaults left untouched: radius 8, minThumbLength 48, fade 300/600 ms,
 // hover-color animation 200 ms.
 private val MainAxisMargin = 2.dp
 private val CrossAxisMargin = 2.dp
@@ -65,14 +65,14 @@ private val MinInteractiveRadius = 12.dp
 // `_kScrollbarFadeDuration` and `_kScrollbarTimeToFade`.
 private const val FadeDurationMs = 300
 private const val TimeToFadeMs = 600L
-// `_MaterialScrollbarState._hoverAnimationController.duration`.
+// `_ScrollbarState._hoverAnimationController.duration` in Flutter.
 private const val HoverDurationMs = 200
 
 /**
  * Yaru scrollbar — pixel-for-pixel port of Flutter's `Scrollbar` composed with
  * Yaru's `ScrollbarThemeData` (`yaru.dart/lib/src/themes/common_themes.dart:783-793`).
  *
- * Behavior reproduced from `material/scrollbar.dart` + `widgets/scrollbar.dart`:
+ * Behavior reproduced from Flutter's `scrollbar.dart` + `widgets/scrollbar.dart`:
  *  - Hidden by default; fades in (300 ms) on any scroll activity.
  *  - 600 ms after the scroll stops, fades out (300 ms). Hover or drag pin it visible.
  *  - Thumb thickness snaps 4 → 8 dp on hover/drag (no easing — Flutter resolves
@@ -91,7 +91,7 @@ fun YaruScrollbar(
     val scheme = LocalYaruColorScheme.current
     val onSurface = scheme.onSurface
     val isLight = scheme.isLight
-    // _MaterialScrollbarState._thumbColor (material/scrollbar.dart:230-249).
+    // Flutter's `_ScrollbarState._thumbColor` (scrollbar.dart:230-249).
     val idleColor = onSurface.copy(alpha = if (isLight) 0.1f else 0.3f)
     val hoverColor = onSurface.copy(alpha = if (isLight) 0.5f else 0.65f)
     val dragColor = onSurface.copy(alpha = if (isLight) 0.6f else 0.75f)
@@ -156,7 +156,7 @@ fun YaruScrollbar(
             }
         }
 
-        // 200 ms idle ↔ hover color ramp (_hoverAnimationController, material/scrollbar.dart:317-320).
+        // 200 ms idle ↔ hover color ramp (_hoverAnimationController, scrollbar.dart:317-320).
         LaunchedEffect(hoverActive || dragActive) {
             hoverAnim.animateTo(
                 if (hoverActive || dragActive) 1f else 0f,
@@ -210,7 +210,7 @@ fun YaruScrollbar(
             val thumbTopPx = mainMarginPx + thumbOffsetWithinTrack
 
             // `Color.lerp(idleColor, hoverColor, _hoverAnimationController.value)`
-            // (material/scrollbar.dart:262-266); drag overrides without animation.
+            // (scrollbar.dart:262-266); drag overrides without animation.
             val color = if (dragActive) {
                 dragColor
             } else {

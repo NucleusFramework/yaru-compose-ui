@@ -137,15 +137,14 @@ fun YaruNavigationRailItem(
     // `grep -nE "YaruFocusBorder|focusBorders" navi_rail/*.dart`); focus is
     // expressed via the standard InkWell highlight only.
     val interactionSource = remember { MutableInteractionSource() }
-    // Defensive: pin the hover/focus indication to a neutral `onSurface` overlay so a leaked Material `LocalIndication` (or any future ancestor override) cannot tint the rail item with the accent color — Dart's InkWell uses Material's default neutral `hoverColor` (Colors.black @ 0.04), never the primary.
+    // Defensive: pin the hover/focus indication to a neutral `onSurface` overlay so a leaked `LocalIndication` from an ancestor cannot tint the rail item with the accent color — Dart's InkWell uses the default neutral `hoverColor` (Colors.black @ 0.04), never the primary.
     val railIndication = remember(scheme.onSurface) { YaruIndication(scheme.onSurface) }
 
     val outerModifier = Modifier
         .width(animatedWidth)
         // Mirrors Dart `InkWell.mouseCursor` default
         // (`WidgetStateMouseCursor.clickable` → `SystemMouseCursors.click`)
-        // — yaru_navigation_rail_item.dart wraps the tile in a Material
-        // `InkWell`.
+        // — yaru_navigation_rail_item.dart wraps the tile in an `InkWell`.
         .pointerHoverIcon(PointerIcon.Hand)
         .clickable(
             interactionSource = interactionSource,

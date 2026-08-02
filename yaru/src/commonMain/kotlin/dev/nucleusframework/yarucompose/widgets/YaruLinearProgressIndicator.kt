@@ -37,7 +37,7 @@ private const val IndeterminateAnimationCycles = 7 // from yaru_linear_progress_
 private const val IndeterminateAnimationDurationMs = 8000 // from yaru_linear_progress_indicator.dart: _kIndeterminateAnimationDuration = 8000
 
 /**
- * Yaru-flavored linear progress indicator — Canvas-painted, no Material3.
+ * Yaru-flavored linear progress indicator — Canvas-painted, foundation-only.
  *
  * Mirrors the determinate / indeterminate paths from
  * `yaru.dart/lib/src/widgets/yaru_linear_progress_indicator.dart`. The
@@ -150,7 +150,7 @@ private fun DrawScope.paintLinearDeterminate(
     trackStrokeWidth: Float,
 ) {
     val y = size.height / 2f
-    // Defensive: DrawScope does not auto-mirror x for RTL — flip the active fill so it grows from the visual start (right edge) under Arabic/Hebrew, matching Material's LinearProgressIndicator and Dart's Directionality-aware paint.
+    // Defensive: DrawScope does not auto-mirror x for RTL — flip the active fill so it grows from the visual start (right edge) under Arabic/Hebrew, matching the Dart `LinearProgressIndicator` and its Directionality-aware paint.
     val isRtl = layoutDirection == LayoutDirection.Rtl
     drawIntoCanvas { canvas ->
         // Track: full-width rounded line, mirrors Dart L271-275.

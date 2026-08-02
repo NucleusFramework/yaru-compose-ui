@@ -152,9 +152,8 @@ private fun BannerEntry(index: Int) {
         },
         onTap = { dialogOpen = true },
         onHover = { hovered = it },
-        // i.isEven ? Colors.pink : null from banner_page.dart L80. Colors.pink
-        // (Material) is #FFE91E63; the Flutter constant `Colors.pink` resolves
-        // to this exact ARGB.
+        // i.isEven ? Colors.pink : null from banner_page.dart L80. The Flutter
+        // constant `Colors.pink` resolves to this exact ARGB (#FFE91E63).
         surfaceTintColor = if (index % 2 == 0) Color(0xFFE91E63) else null,
     )
 
@@ -163,7 +162,7 @@ private fun BannerEntry(index: Int) {
         // title: YaruDialogTitleBar(title))` (banner_page.dart L70-78).
         // Reuses YaruDialog so the inline banner dialog inherits the same
         // 200ms fade + scale-1.3 transition as every other Yaru dialog
-        // (matches Flutter's default `_buildMaterialDialogTransitions`).
+        // (matches Flutter's default dialog transition builder).
         YaruDialog(
             onDismissRequest = { dialogOpen = false },
             title = { YaruText(title) },

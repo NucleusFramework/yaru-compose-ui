@@ -21,8 +21,7 @@ import dev.nucleusframework.yarucompose.themes.scale
 
 /**
  * Hairline divider using Yaru's exact color (matches `dividerTheme.color` from
- * `yaru.dart/lib/src/themes/common_themes.dart`). Foundation-only — no
- * Material3 dependency.
+ * `yaru.dart/lib/src/themes/common_themes.dart`). Foundation-only.
  */
 @Composable
 fun YaruHorizontalDivider(

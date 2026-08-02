@@ -46,8 +46,8 @@ import dev.nucleusframework.yarucompose.themes.LocalYaruTypography
 import dev.nucleusframework.yarucompose.themes.YaruColorScheme
 import dev.nucleusframework.yarucompose.themes.YaruConstants
 
-// `kTabScrollDuration` from Flutter's `material/tabs.dart` (300 ms) — drives
-// the indicator slide animation in Material `TabBar`, which yaru_tab_bar.dart
+// `kTabScrollDuration` from Flutter's `tabs.dart` (300 ms) — drives the
+// indicator slide animation in Flutter's `TabBar`, which yaru_tab_bar.dart
 // builds on top of without overriding.
 private const val TAB_SCROLL_DURATION_MILLIS: Int = 300
 
@@ -70,14 +70,14 @@ private const val INDICATOR_BACKGROUND_ALPHA: Float = 0.1f
 private const val TAB_OVERLAY_ALPHA: Float = 0.05f
 
 /**
- * Yaru-styled tab bar — foundation only, no Material3 dependency.
+ * Yaru-styled tab bar — foundation only.
  *
  * Mirrors `yaru.dart/lib/src/widgets/yaru_tab_bar.dart`:
  *  - outer container: 5dp padding all around, height = `kYaruTitleBarItemHeight + 10` (44dp)
- *  - tabs share the available width equally (Material `TabBar` is non-scrollable here)
+ *  - tabs share the available width equally (the Dart `TabBar` is non-scrollable here)
  *  - selected pill: `onSurface @ 0.10`, radius = `kYaruButtonRadius` (8dp), `TabBarIndicatorSize.tab`
  *  - selected label: `colorScheme.onSurface`
- *  - unselected label: `colorScheme.onSurfaceVariant` (Material 3 `_TabsDefaultsM3` default)
+ *  - unselected label: `colorScheme.onSurfaceVariant` (`_TabsDefaultsM3` default)
  *  - hover / focus / press overlays come from [LocalIndication] (Yaru flat overlay), clipped to the pill
  *  - the pill slides smoothly between tabs (`kTabScrollDuration` 300ms / `Curves.ease`)
  *    like Flutter `TabBar`'s indicator animation (TabController.animateTo default
@@ -85,7 +85,7 @@ private const val TAB_OVERLAY_ALPHA: Float = 0.05f
  *
  * No per-tab focus ring: Dart `yaru_tab_bar.dart` has no `YaruFocusBorder`
  * wrapping (`grep -nE "YaruFocusBorder|focusBorders" yaru_tab_bar.dart` is
- * empty). Material `_createTabBarTheme` in common_themes.dart only customises
+ * empty). `_createTabBarTheme` in common_themes.dart only customises
  * `overlayColor`, leaving focus to the standard state-layer overlay.
  */
 @Composable
@@ -105,7 +105,7 @@ fun YaruTabBar(
     // Defensive: caller-supplied label colors propagate to LocalYaruContentColor and may reach draw calls; coerce non-finite channels.
     val resolvedLabelColor = sanitiseColor(labelColor ?: scheme.onSurface)
     val resolvedUnselectedColor = sanitiseColor(unselectedLabelColor ?: scheme.onSurfaceVariant)
-    // Material `_TabsDefaultsM3.labelStyle` — `textTheme.titleSmall` (W500),
+    // Dart `_TabsDefaultsM3.labelStyle` — `textTheme.titleSmall` (W500),
     // applied unchanged by yaru_tab_bar.dart since `_createTabBarTheme` only
     // overrides colors / overlay (see common_themes.dart line 442).
     val labelStyle = LocalYaruTypography.current.titleSmall
@@ -116,9 +116,9 @@ fun YaruTabBar(
     // the bar (or beyond it) — clamp into `[0, tabs.size - 1]` so the
     // indicator stays inside the layout.
     val clampedSelectedIndex = selectedTabIndex.coerceIn(0, tabs.size - 1)
-    // The pill slide tracks Material `TabController.animateTo` (tab_controller.dart
+    // The pill slide tracks Flutter's `TabController.animateTo` (tab_controller.dart
     // line 265: `curve: Curves.ease`, duration `kTabScrollDuration` = 300ms from
-    // material/constants.dart line 51). Because `TabBarIndicatorSize.tab` selects
+    // constants.dart line 51). Because `TabBarIndicatorSize.tab` selects
     // `TabIndicatorAnimation.linear` (tabs.dart line 1705), `_IndicatorPainter`
     // simply lerps the indicator rect against the controller animation value
     // (tabs.dart line 666), so the visible curve IS `Curves.ease`. This is NOT
@@ -155,7 +155,7 @@ fun YaruTabBar(
             modifier = Modifier.fillMaxWidth().fillMaxHeight(),
         )
 
-        // Tab row: equally-sized cells, no inter-tab spacing (mirrors Material `TabBar`).
+        // Tab row: equally-sized cells, no inter-tab spacing (mirrors Flutter's `TabBar`).
         Row(
             modifier = Modifier.fillMaxWidth().fillMaxHeight(),
             verticalAlignment = Alignment.CenterVertically,
@@ -215,7 +215,7 @@ private fun RowScope.TabCell(
                         Color.Transparent
                     },
                 )
-                // Mirrors Material `Tab`/`InkWell.mouseCursor`
+                // Mirrors Flutter's `Tab`/`InkWell.mouseCursor`
                 // default (`WidgetStateMouseCursor.clickable` →
                 // `SystemMouseCursors.click`). Yaru's
                 // `_createTabBarTheme` doesn't override it.
@@ -274,7 +274,7 @@ private fun SlidingTabIndicator(
                 val x = (position * safeTabWidth).toInt()
                 // `placeRelative` mirrors `x` in RTL so the indicator pill tracks
                 // the visually-mirrored Row above it (yaru.dart inherits this from
-                // Material `TabBar`, which lerps `_indicatorPainter._currentRect`
+                // the Dart `TabBar`, which lerps `_indicatorPainter._currentRect`
                 // through its text-direction-aware `_paint`).
                 pill.placeRelative(x = x, y = (outHeight - pill.height) / 2)
             }
@@ -298,7 +298,7 @@ fun YaruTab(
     modifier: Modifier = Modifier,
     icon: (@Composable () -> Unit)? = null,
     // Mirrors Dart `YaruTab.padding` (yaru_tab_bar.dart:48). Inner padding
-    // around the tab content. Defaults to `null`, matching Material `Tab`'s
+    // around the tab content. Defaults to `null`, matching Flutter's `Tab`
     // default of no extra padding.
     padding: PaddingValues? = null,
 ) {

@@ -31,7 +31,7 @@ private const val Max12HourValue = 12
 private const val MaxMinuteValue = 59
 private const val TimePlaceholder = "-"
 private const val TimeDelimiter = ":"
-// Dart resolves the date separator from `MaterialLocalizations.dateSeparator`;
+// Dart resolves the date separator from the framework's `dateSeparator`;
 // the en-locale default (and the most common form for the GTK/Yaru desktop)
 // is `/`. We hardcode `/` here for parity with the Dart sample on macOS /
 // Linux defaults — until KMP gains an equivalent localization hook.
@@ -41,7 +41,7 @@ private const val MonthPlaceholder = "m"
 private const val DayPlaceholder = "d"
 // endregion
 
-/** AM/PM marker, mirrors `DayPeriod` from Flutter's material library. */
+/** AM/PM marker, mirrors `DayPeriod` from the Flutter framework. */
 enum class YaruDayPeriod { AM, PM }
 
 private val YaruDayPeriod.isAm: Boolean get() = this == YaruDayPeriod.AM
@@ -172,7 +172,7 @@ fun YaruDateTimeEntry(
     includeTime: Boolean = true,
     initialDateTime: LocalDateTime? = null,
     // Mirrors `bool? force24HourFormat` from yaru.dart: when null, falls back to
-    // the (un-localized) default below. We don't have access to material
+    // the (un-localized) default below. We don't have access to the Flutter
     // localizations on KMP, so the resolver below treats `null` as 12-hour like
     // en_US for parity with the Dart sample on macOS / Linux defaults.
     force24HourFormat: Boolean = false,
@@ -356,7 +356,7 @@ private class DateTimeEntryHolder(
         )
 
         // Build segments and delimiters mirroring Dart `_updateSegmentsAndDelimiters`.
-        // Dart uses `MaterialLocalizations.formatCompactDate` to derive the
+        // Dart uses the framework's `formatCompactDate` to derive the
         // segment order; without that on KMP we ship the European DD/MM/YYYY
         // ordering which matches the Yaru/GTK desktop sample defaults.
         val s = mutableListOf<YaruEntrySegment>()

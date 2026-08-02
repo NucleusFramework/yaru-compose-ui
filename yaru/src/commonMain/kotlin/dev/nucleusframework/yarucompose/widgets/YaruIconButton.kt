@@ -40,7 +40,7 @@ import dev.nucleusframework.yarucompose.themes.YaruConstants
  * Geometry (matches Dart `defaultStyleOf`):
  *  - `fixedSize: Size(iconSize, iconSize)` and `padding: zero` → the button is
  *    exactly `iconSize` square. Hover / press overlays are clipped to [shape].
- *  - default shape is [CircleShape] (Material `IconButton` default).
+ *  - default shape is [CircleShape] (the Dart `IconButton` default).
  *
  * Color states (mirror `defaultStyleOf`):
  *  - selected fill (`backgroundColor`): `onSurface @ 0.10`
@@ -68,7 +68,7 @@ fun YaruIconButton(
     enabled: Boolean = true,
     iconSize: Dp = YaruConstants.IconSize,
     // Mirrors `_IconButtonDefaultsM3.minimumSize = Size(40, 40)`
-    // (material/icon_button.dart:1130). Yaru sets `fixedSize: Size(iconSize, iconSize)`
+    // (icon_button.dart:1130). Yaru sets `fixedSize: Size(iconSize, iconSize)`
     // (yaru_icon_button.dart:50) but `_RenderButton` clamps it through
     // `effectiveConstraints.constrain(resolvedFixedSize)`
     // (button_style_button.dart:482), so `Size(20, 20)` becomes `Size(40, 40)` —
@@ -146,7 +146,7 @@ fun YaruIconButton(
         backgroundColor
     }
     // Mirrors `InkResponse.hoverDuration` default of 50 ms
-    // (material/ink_well.dart:1001) — Yaru disables the splash via
+    // (ink_well.dart:1001) — Yaru disables the splash via
     // `splashFactory: NoSplash.splashFactory` (common_themes.dart),
     // so the visible state-layer change is the InkWell hover/highlight
     // fade. Without this animation, hover/press snaps and the button
@@ -170,7 +170,7 @@ fun YaruIconButton(
                 .let { m -> if (!semanticLabel.isNullOrBlank()) m.semantics { contentDescription = semanticLabel } else m }
                 // `Modifier.background(color, shape)` paints the overlay within
                 // [shape] but does NOT clip children — matching Flutter's
-                // `Material(clipBehavior: Clip.none)` default. If we used
+                // `clipBehavior: Clip.none` default. If we used
                 // `clip(shape).background(...)` instead, an oversized child
                 // icon (e.g. `Icon(size: 30)` inside a 20dp button — see
                 // InfoPage's lightbulb) would be truncated to the button's
@@ -203,7 +203,7 @@ fun YaruIconButton(
             contentAlignment = Alignment.Center,
         ) {
             CompositionLocalProvider(LocalYaruContentColor provides tint) {
-                // Defensive: wrap the icon slot in `wrapContentSize(unbounded = true)` so a caller-supplied YaruIcon larger than the button's `iconSize` (e.g. 30dp glyph inside a 20dp button — InfoPage's lightbulb) measures at its preferred size and overflows visually instead of being clamped to the button's tight `size()` constraints. This mirrors Flutter `Material(clipBehavior: Clip.none)`.
+                // Defensive: wrap the icon slot in `wrapContentSize(unbounded = true)` so a caller-supplied YaruIcon larger than the button's `iconSize` (e.g. 30dp glyph inside a 20dp button — InfoPage's lightbulb) measures at its preferred size and overflows visually instead of being clamped to the button's tight `size()` constraints. This mirrors Flutter's `clipBehavior: Clip.none`.
                 Box(modifier = Modifier.wrapContentSize(unbounded = true)) {
                     if (selected && selectedIcon != null) selectedIcon() else icon()
                 }

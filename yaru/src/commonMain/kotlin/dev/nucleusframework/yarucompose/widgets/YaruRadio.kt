@@ -33,7 +33,7 @@ import dev.nucleusframework.yarucompose.themes.YaruConstants
 import dev.nucleusframework.yarucompose.themes.isHighContrast
 
 /**
- * Yaru-flavored radio button — Canvas-painted, no Material3 dependency.
+ * Yaru-flavored radio button — Canvas-painted, foundation-only.
  *
  * Mirrors `_YaruRadioPainter` from `yaru.dart/lib/src/widgets/yaru_radio.dart`,
  * including the `_kDotSizeFactor = 0.4` and `_kUncheckedBorderWidth = 2`

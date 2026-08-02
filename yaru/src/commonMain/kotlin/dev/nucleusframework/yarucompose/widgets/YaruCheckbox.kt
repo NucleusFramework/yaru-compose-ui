@@ -42,7 +42,7 @@ import dev.nucleusframework.yarucompose.themes.isHighContrast
 import dev.nucleusframework.yarucompose.themes.isLight
 
 /**
- * Yaru-flavored checkbox, painted on a [Canvas] — no Material3 dependency.
+ * Yaru-flavored checkbox, painted on a [Canvas] — foundation-only.
  *
  * Mirrors `_YaruCheckboxPainter.paintTogglable` and the animation machinery of
  * `YaruTogglableState` from `yaru.dart/lib/src/widgets/yaru_checkbox.dart` and
@@ -251,7 +251,7 @@ fun YaruCheckbox(
                                 enabled = interactive,
                                 interactionSource = effectiveInteractionSource,
                                 indication = null,
-                                // Defensive: foundation `triStateToggleable` does NOT auto-attach `Role.Checkbox` (only Material `Checkbox` does); without this screen readers announce a generic clickable region instead of "checkbox, checked/unchecked/indeterminate".
+                                // Defensive: foundation `triStateToggleable` does NOT auto-attach `Role.Checkbox` (higher-level checkbox widgets do); without this screen readers announce a generic clickable region instead of "checkbox, checked/unchecked/indeterminate".
                                 role = Role.Checkbox,
                                 onClick = toggle,
                             )

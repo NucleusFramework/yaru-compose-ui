@@ -11,9 +11,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
 /**
- * Yaru typography scale — the same 15-style ladder Material3 ships, but
- * decoupled from `androidx.compose.material3.Typography` so the library can
- * drop Material3 entirely.
+ * Yaru typography scale — a self-contained 15-style ladder owned by this
+ * library, so no external typography type is needed.
  *
  * Sizes / weights match `createTextTheme(textColor)` from
  * `yaru.dart/lib/src/themes/text_theme.dart`.
@@ -41,12 +40,12 @@ data class YaruTypography(
  * Build a [YaruTypography] using the Ubuntu font family.
  *
  * [textColor] is intentionally ignored when constructing the [TextStyle]s — the
- * foreground colour is driven by [LocalYaruContentColor] (and, for Material3
+ * foreground colour is driven by [LocalYaruContentColor] (and, for foreign
  * widgets sharing this typography, by `LocalContentColor`). Baking a colour
- * into the style would override those locals, so e.g. a Material3 `Badge`
- * setting `LocalContentColor = onError` would still render its label in
- * `onSurface` because `Text` reads `style.color` first. The parameter is kept
- * for source compatibility with previous callers.
+ * into the style would override those locals, so a widget setting
+ * `LocalContentColor = onError` would still render its label in `onSurface`
+ * because `Text` reads `style.color` first. The parameter is kept for source
+ * compatibility with previous callers.
  */
 @Suppress("UNUSED_PARAMETER")
 fun yaruTypography(
@@ -103,5 +102,5 @@ val LocalYaruTextOverflow = staticCompositionLocalOf { TextOverflow.Clip }
 /** @see LocalYaruTextSoftWrap */
 val LocalYaruTextMaxLines = staticCompositionLocalOf { Int.MAX_VALUE }
 
-/** Composition local for the active foreground color (replaces `m3.LocalContentColor`). */
+/** Composition local for the active foreground color (our own `LocalContentColor`). */
 val LocalYaruContentColor = staticCompositionLocalOf<Color> { Color.Black }

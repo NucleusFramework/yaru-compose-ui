@@ -44,7 +44,7 @@ import dev.nucleusframework.yarucompose.themes.isHighContrast
 enum class YaruButtonVariant { Filled, Tonal, Outlined, Text, Elevated }
 
 /**
- * Generic Yaru button — flat, foundation-only. Mirrors the Material variants
+ * Generic Yaru button — flat, foundation-only. Mirrors the Dart variants
  * configured in `_createOutlinedButtonTheme` / `_createTextButtonTheme` /
  * `_createElevatedButtonTheme` / `_createFilledButtonTheme` from
  * `yaru.dart/lib/src/themes/common_themes.dart`.
@@ -55,7 +55,7 @@ enum class YaruButtonVariant { Filled, Tonal, Outlined, Text, Elevated }
  * applied to all four sides. The 34dp `minimumSize` only kicks in when the
  * combined content + padding is smaller than 34dp on either axis.
  *
- * State overlays mirror Material 3's per-variant `overlayColor` defaults
+ * State overlays mirror Flutter's per-variant `overlayColor` defaults
  * (`_FilledButtonDefaultsM3`, `_OutlinedButtonDefaultsM3`,
  * `_TextButtonDefaultsM3`, `_ElevatedButtonDefaultsM3` in the Flutter SDK):
  * the state layer base is the variant's foreground colour, with
@@ -134,14 +134,14 @@ fun YaruButton(
     val focused by rememberKeyboardFocusedState(interactionSource)
 
     // State-layer overlays composited over the base background. Alphas mirror
-    // Material 3's per-variant `overlayColor` resolution exactly:
+    // Flutter's per-variant `overlayColor` resolution exactly:
     //   pressed = 0.10, hovered = 0.08, focused = 0.10
     // (see `_FilledButtonDefaultsM3.overlayColor` etc. in the Flutter SDK —
     // Yaru leaves this field untouched in `_create*ButtonTheme`).
     // Press wins over hover; hover wins over focus.
     val overlay = when {
         !enabled -> Color.Transparent
-        // State layer base = foreground color, matching Material's
+        // State layer base = foreground color, matching Flutter's
         // `_buttonDefaultOverlay(foreground)` helper that `styleFrom` wires
         // up when only `foregroundColor` is overridden.
         pressed -> baseContent.copy(alpha = 0.1f)
@@ -152,9 +152,9 @@ fun YaruButton(
 
     // Resolve the visible background. Filled has an explicit disabled colour
     // (`disabledBackgroundColor: onSurface @ 0.12` in Dart). Tonal isn't themed
-    // by Yaru, so M3's `_FilledTonalButtonDefaultsM3` disabled background applies:
-    // also `onSurface @ 0.12`. Elevated leaves the disabled background to M3
-    // defaults too: `onSurface @ 0.12`. Outlined and Text are transparent.
+    // by Yaru, so `_FilledTonalButtonDefaultsM3`'s disabled background applies:
+    // also `onSurface @ 0.12`. Elevated leaves the disabled background to the
+    // framework defaults too: `onSurface @ 0.12`. Outlined and Text are transparent.
     val resolvedBackground = when {
         !enabled && (
             variant == YaruButtonVariant.Filled ||
@@ -165,7 +165,7 @@ fun YaruButton(
         else -> overlay.compositeOver(baseBackground)
     }
 
-    // Material disabled foreground alpha — `onSurface @ 0.38`, used by Flutter's
+    // Standard disabled foreground alpha — `onSurface @ 0.38`, used by Flutter's
     // ButtonStyleButton when no explicit `disabledForegroundColor` is set in the
     // Yaru styles (see `_createOutlinedButtonTheme` etc. in common_themes.dart).
     val resolvedContent = if (enabled) {
@@ -174,9 +174,9 @@ fun YaruButton(
         baseContent.copy(alpha = baseContent.alpha * 0.38f)
     }
     // Yaru pins the outlined border via `styleFrom(side: BorderSide(...))`, which
-    // Flutter wraps as `MaterialStatePropertyAll<BorderSide>`. The same colour is
+    // Flutter wraps as a `WidgetStatePropertyAll<BorderSide>`. The same colour is
     // therefore applied in every state, including disabled — no fade. (Without the
-    // override, M3 would use `onSurface @ 0.12` for disabled.)
+    // override, the default would use `onSurface @ 0.12` for disabled.)
     // Defensive clamp: `Modifier.border` with a negative or non-finite
     // `BorderStroke.width` throws `IllegalArgumentException`. NaN bypasses
     // `<` (all NaN comparisons return false), so reject non-finite values
@@ -185,7 +185,7 @@ fun YaruButton(
     val resolvedBorder = baseBorder?.sanitiseStrokeWidth()
 
     // No focus ring: Dart `_create*ButtonTheme` in common_themes.dart customises
-    // only `overlayColor` — focus is handled by Material's state-layer overlay,
+    // only `overlayColor` — focus is handled by the state-layer overlay,
     // not by `YaruFocusBorder` (verified: `_create*ButtonTheme` in
     // `yaru.dart/lib/src/themes/common_themes.dart` contains no
     // `YaruFocusBorder` / `focusBorders`).
@@ -198,7 +198,7 @@ fun YaruButton(
             .let {
                 if (resolvedBorder != null) it.border(resolvedBorder, shape) else it
             }
-            // Mirrors Material `ButtonStyleButton.mouseCursor` default
+            // Mirrors Flutter's `ButtonStyleButton.mouseCursor` default
             // (`WidgetStateMouseCursor.clickable` → `SystemMouseCursors.click`).
             // Yaru's `_create*ButtonTheme` doesn't override mouseCursor, so all
             // variants hand-cursor on hover. Apply only when enabled — disabled

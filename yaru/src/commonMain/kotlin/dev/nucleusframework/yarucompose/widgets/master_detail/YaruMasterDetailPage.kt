@@ -115,7 +115,7 @@ fun YaruMasterDetailPage(
                     // Wrap the entire pane (incl. appBar / bottomBar) in the
                     // sidebar tint, matching Dart's
                     // `Container(color: theme.sideBarColor)` around the list
-                    // and `Material(color: theme.sideBarColor)` around the
+                    // and the same tint on the surface around the
                     // bottomBar.
                     Column(modifier = Modifier.fillMaxSize().background(sideBarColor)) {
                         appBar?.invoke()
@@ -128,7 +128,7 @@ fun YaruMasterDetailPage(
                     }
                 },
                 page = {
-                    // Detail surface; matches Dart's `Material(color: surface)`
+                    // Detail surface; matches Dart's `color: surface` surface
                     // inside `YaruDetailPage` — caller supplies the page, we
                     // only animate between indices using the landscape's
                     // `verticalTransitions` from yaru.dart.
@@ -143,7 +143,7 @@ fun YaruMasterDetailPage(
                                 //   _secondaryOpacity = easeOutExpo (outgoing fade)
                                 // Compose lacks a built-in easeOutExpo for fade; the default
                                 // tween() curve is sufficiently close while still respecting
-                                // the 300ms MaterialPageRoute duration.
+                                // the 300ms Flutter page-route duration.
                                 (
                                     slideInVertically(
                                         animationSpec = tween(easing = FastOutSlowInEasing),

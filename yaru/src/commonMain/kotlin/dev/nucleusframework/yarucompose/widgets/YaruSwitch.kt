@@ -38,7 +38,7 @@ import dev.nucleusframework.yarucompose.themes.isHighContrast
 import dev.nucleusframework.yarucompose.themes.isLight
 
 /**
- * Yaru-flavored switch — Canvas-painted, no Material* dependency.
+ * Yaru-flavored switch — Canvas-painted, foundation-only.
  *
  * Mirrors `_YaruSwitchPainter` from `yaru.dart/lib/src/widgets/yaru_switch.dart`.
  * Geometry constants (`_kSwitchSize = 48 × 26`, `_kSwitchThumbSizeFactor = 0.76`,
@@ -377,7 +377,7 @@ private fun DrawScope.drawThumb(
     val radius = innerH / 2f
     val startX = radius + margin
     val endX = (innerW + margin - radius).coerceAtLeast(startX)
-    // Defensive: DrawScope does not auto-mirror x for RTL — flip the thumb travel so the unchecked thumb sits at the visual start (right edge) under Arabic/Hebrew, matching Material Switch.
+    // Defensive: DrawScope does not auto-mirror x for RTL — flip the thumb travel so the unchecked thumb sits at the visual start (right edge) under Arabic/Hebrew, matching the Dart `Switch`.
     val isRtl = layoutDirection == LayoutDirection.Rtl
     val effectiveT = if (isRtl) 1f - t else t
     val centerX = startX + (endX - startX) * effectiveT

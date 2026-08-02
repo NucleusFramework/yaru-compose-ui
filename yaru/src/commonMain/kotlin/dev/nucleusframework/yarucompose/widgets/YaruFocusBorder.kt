@@ -220,7 +220,7 @@ fun YaruFocusBorder(
  * ring never paints; when the mode is [InputMode.Keyboard], the returned
  * state mirrors the source's actual focus state.
  *
- * This matches the Material/Flutter `FocusManager.highlightStrategy =
+ * This matches Flutter's `FocusManager.highlightStrategy =
  * automatic` semantics: focus rings appear only when the user navigates
  * with Tab / arrow keys, not when they click with a mouse.
  */

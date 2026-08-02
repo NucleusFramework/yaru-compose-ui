@@ -14,7 +14,7 @@ import dev.nucleusframework.yarucompose.settings.LocalYaruTheme
  * A [YaruListTile] with a [YaruSwitch]. Tapping the row toggles the value.
  *
  * Mirrors `yaru.dart/lib/src/widgets/yaru_switch_list_tile.dart`. Foundation-
- * only — uses [YaruListTile] instead of Material3 `ListItem`.
+ * only — the row is a plain [YaruListTile].
  *
  * @param control optional override for the toggle slot — pass any composable
  * (typically a [YaruSwitch] surrounded by extra controls) and the row will

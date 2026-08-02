@@ -39,7 +39,7 @@ import dev.nucleusframework.yarucompose.widgets.YaruText
  *
  * Both cards use [YaruDialogSurface] to match Flutter's `SimpleDialog` chrome
  * (`_createDialogTheme` in common_themes.dart:318-330: `_createMenuBg`
- * background, 14 dp window radius, dark/HC border, Material 3 elevation 6).
+ * background, 14 dp window radius, dark/HC border, elevation 6).
  * `SimpleDialog`'s default body padding `EdgeInsets.fromLTRB(0, 12, 0, 16)`
  * applies around the 300×450 content box.
  */
@@ -61,7 +61,7 @@ fun SearchFieldPage() {
             contentPadding = PaddingValues(YaruConstants.PagePadding),
             // Each Flutter `SimpleDialog` wraps itself in `Dialog` which adds
             // `insetPadding: EdgeInsets.symmetric(horizontal: 40, vertical: 24)`
-            // by default (material/dialog.dart `_defaultInsetPadding`). Two
+            // by default (Flutter's dialog.dart `_defaultInsetPadding`). Two
             // stacked dialogs therefore show 24+24 = 48 dp of breathing room.
             verticalArrangement = Arrangement.spacedBy(48.dp),
             horizontalAlignment = Alignment.CenterHorizontally,

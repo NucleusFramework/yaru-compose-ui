@@ -59,8 +59,7 @@ data class YaruSplitButtonItem(
 /**
  * A button paired with a chevron that opens a dropdown of secondary actions.
  *
- * Mirrors `yaru.dart/lib/src/widgets/yaru_split_button.dart`. Foundation-only —
- * no `androidx.compose.material*` imports.
+ * Mirrors `yaru.dart/lib/src/widgets/yaru_split_button.dart`. Foundation-only.
  *
  * Layout parity:
  *  - Two side-by-side buttons inside an `IntrinsicHeight + Row` joined by a
@@ -121,7 +120,7 @@ fun YaruSplitButton(
     val buttonVariant = when (variant) {
         YaruSplitButtonVariant.Elevated -> YaruButtonVariant.Elevated
         // from yaru_split_button.dart L126-130: the .filled() constructor
-        // uses Material's FilledButton — Yaru theme = onSurface @ 0.1.
+        // uses the Dart `FilledButton` — Yaru theme = onSurface @ 0.1.
         YaruSplitButtonVariant.Filled -> YaruButtonVariant.Filled
         YaruSplitButtonVariant.Outlined -> YaruButtonVariant.Outlined
     }
@@ -150,7 +149,7 @@ fun YaruSplitButton(
                 enabled = onPressed != null,
                 variant = buttonVariant,
                 shape = mainShape,
-                // Defensive: drop the default 16dp top/bottom padding so the label fits inside the row's pinned 34dp height. Mirrors Material's compact horizontal-only padding for ElevatedButton at fixed-height.
+                // Defensive: drop the default 16dp top/bottom padding so the label fits inside the row's pinned 34dp height. Mirrors the Dart `ElevatedButton`'s compact horizontal-only padding at fixed-height.
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 24.dp, vertical = 0.dp),
                 modifier = Modifier.fillMaxHeight(),
             ) { label() }
@@ -190,7 +189,7 @@ fun YaruSplitButton(
                         icon()
                     } else {
                         // from yaru_split_button.dart L106-107:
-                        //   Icon(YaruIcons.pan_down) — Material IconTheme
+                        //   Icon(YaruIcons.pan_down) — the ambient IconTheme
                         //   sets size = kYaruIconSize (20).
                         YaruIcon(YaruIcons.pan_down, size = YaruConstants.IconSize)
                     }
@@ -255,9 +254,9 @@ private fun SplitMenuRow(
     val hovered by interactionSource.collectIsHoveredAsState()
     val pressed by interactionSource.collectIsPressedAsState()
     // SplitButton dispatches via `showMenu(...)` (yaru_split_button.dart
-    // L83-94) which materialises `PopupMenuItem`s. Those wrap their child in
+    // L83-94) which builds `PopupMenuItem`s. Those wrap their child in
     // a plain `InkWell` (no `overlayColor` override), which falls back to
-    // `ThemeData.hoverColor`/`highlightColor` — M3 defaults `0.04`/`0.1`.
+    // `ThemeData.hoverColor`/`highlightColor` — Dart defaults `0.04`/`0.1`.
     // Yaru's global `splashFactory: NoSplash` kills the ripple, so the
     // press feedback is the static highlight (NOT the splash) color.
     val background = when {
@@ -270,14 +269,14 @@ private fun SplitMenuRow(
         modifier = Modifier
             .fillMaxWidth()
             // SplitButton dispatches the popup via `showMenu(...)` (see
-            // yaru_split_button.dart L83-94) which renders Material
+            // yaru_split_button.dart L83-94) which renders Dart
             // `PopupMenuItem`s — those default to `kMinInteractiveDimension =
             // 48` and Yaru does not override `popupMenuTheme.menuItemHeight`.
             .heightIn(min = 48.dp)
             .let {
                 if (item.enabled) {
                     it
-                        // Mirrors Material `PopupMenuItem` / `InkWell.mouseCursor`
+                        // Mirrors Flutter's `PopupMenuItem` / `InkWell.mouseCursor`
                         // default (`WidgetStateMouseCursor.clickable` →
                         // `SystemMouseCursors.click`).
                         .pointerHoverIcon(PointerIcon.Hand)
@@ -295,9 +294,9 @@ private fun SplitMenuRow(
                 }
             }
             .background(background)
-            // M3 `_PopupMenuDefaultsM3.menuItemPadding =
-            // EdgeInsets.symmetric(horizontal: 12)` (M2 was 16). Yaru runs M3
-            // and does not override `popupMenuTheme.menuPadding`.
+            // Dart `_PopupMenuDefaultsM3.menuItemPadding =
+            // EdgeInsets.symmetric(horizontal: 12)` (the older default was 16).
+            // Yaru does not override `popupMenuTheme.menuPadding`.
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -305,10 +304,10 @@ private fun SplitMenuRow(
             LocalYaruContentColor provides if (item.enabled) {
                 scheme.onSurface
             } else {
-                // Material `Theme.disabledColor` ≈ onSurface @ 0.38.
+                // Dart `Theme.disabledColor` ≈ onSurface @ 0.38.
                 scheme.onSurface.copy(alpha = 0.38f)
             },
-            // M3 `_PopupMenuDefaultsM3.labelTextStyle` returns `labelLarge`
+            // Dart `_PopupMenuDefaultsM3.labelTextStyle` returns `labelLarge`
             // (yaru: 14.66sp Normal). `showMenu` items go through the same
             // theme path as `PopupMenuButton`, so we mirror the popup widget.
             LocalYaruTextStyle provides LocalYaruTypography.current.labelLarge,

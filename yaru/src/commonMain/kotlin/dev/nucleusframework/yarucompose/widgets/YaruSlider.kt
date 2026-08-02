@@ -51,14 +51,14 @@ import kotlinx.coroutines.launch
  * Mirrors `_createSliderTheme` from `yaru.dart/lib/src/themes/common_themes.dart`
  * (lines 492-502):
  *  - `thumbColor: Colors.white`
- *  - `thumbShape: RoundSliderThumbShape(elevation: 3.0)` (Material default
+ *  - `thumbShape: RoundSliderThumbShape(elevation: 3.0)` (Flutter default
  *    radius = 10 → 20dp diameter, with a 3dp drop shadow)
  *  - `overlayShape: RoundSliderOverlayShape(overlayRadius: 13)` — a 26dp
  *    circle painted behind the thumb when hovered/pressed
  *  - `overlayColor: primary @ alpha (light: 0.4, dark: 0.7)`
  *  - `inactiveTrackColor: onSurface @ 0.3`
- *  - `activeTrackColor`: inherits Material default = `primary`
- *  - `trackHeight`: not overridden → Material default = 4dp
+ *  - `activeTrackColor`: inherits the Flutter default = `primary`
+ *  - `trackHeight`: not overridden → Flutter default = 4dp
  */
 @Composable
 fun YaruSlider(
@@ -69,9 +69,9 @@ fun YaruSlider(
     valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
 ) {
     val scheme = LocalYaruColorScheme.current
-    // Material default `trackHeight` (sliders/slider.dart `_defaultTrackHeight`).
+    // Flutter default `trackHeight` (sliders/slider.dart `_defaultTrackHeight`).
     val trackHeight = 4.dp
-    // Material `RoundSliderThumbShape.enabledThumbRadius = 10` → 20dp diameter.
+    // Flutter's `RoundSliderThumbShape.enabledThumbRadius = 10` → 20dp diameter.
     val thumbSize = 20.dp
     // `RoundSliderOverlayShape(overlayRadius: 13)` from common_themes.dart L495.
     val overlaySize = 26.dp
@@ -98,10 +98,10 @@ fun YaruSlider(
     val hovered by interactionSource.collectIsHoveredAsState()
     val pressed by interactionSource.collectIsPressedAsState()
     val coroutineScope = rememberCoroutineScope()
-    // Mirrors Material `_RenderSlider._textDirection`: in RTL the visual
+    // Mirrors Flutter's `_RenderSlider._textDirection`: in RTL the visual
     // origin is on the right edge of the track, so a tap/drag at `offset.x`
     // must be reflected before being mapped to a value. yaru.dart defers to
-    // Material's `Slider`, which is text-direction-aware out of the box.
+    // the Dart `Slider`, which is text-direction-aware out of the box.
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
 
     // Wrap caller-provided / per-composition values so the gesture coroutines
@@ -138,7 +138,7 @@ fun YaruSlider(
         else -> value.coerceIn(rangeStart, rangeEnd)
     }
 
-    // Keyboard step sizes mirror Flutter Material `Slider`'s `_AdjustSliderIntent`
+    // Keyboard step sizes mirror the Flutter `Slider`'s `_AdjustSliderIntent`
     // semantics (sliders/slider.dart): a continuous slider with no `divisions`
     // uses 1/20 of the range (= 0.05 for 0..1) per arrow press, and the
     // `Slider.adjustmentUnit` constants used by `_actionMap` map Page Up/Down
@@ -182,7 +182,7 @@ fun YaruSlider(
                 layout(placeable.width, placeable.height) { placeable.place(0, 0) }
             }
             // Keyboard support — parity with Compose Foundation's built-in
-            // `Slider` and Flutter Material `Slider`. Arrow keys adjust by a
+            // `Slider` and the Flutter `Slider`. Arrow keys adjust by a
             // small step, Page Up/Down by a large step, Home/End jump to the
             // bounds. RTL flips the horizontal arrows so the visual direction
             // of motion stays consistent (Flutter's `Slider` does the same via
@@ -299,7 +299,7 @@ fun YaruSlider(
                 ),
         )
 
-        // Active track — Material default `activeTrackColor: primary`.
+        // Active track — Flutter default `activeTrackColor: primary`.
         val fraction = ((safeValue - rangeStart) / rangeSpan).coerceIn(0f, 1f)
         Box(
             modifier = Modifier
@@ -314,7 +314,7 @@ fun YaruSlider(
 
         // Press-only overlay — 26dp circle behind the thumb with
         // `primary @ alpha (light: 0.4, dark: 0.7)` from common_themes.dart L497.
-        // Defensive: gate the accent halo on `pressed` only (not `hovered`). Material `Slider`'s `RoundSliderOverlayShape` paints via `activationAnimation`, which only ramps up during active drag/press in practice — Flutter's Yaru sample shows no halo on plain hover. Including `hovered` here over-painted the accent halo around the thumb whenever the cursor was just resting on it.
+        // Defensive: gate the accent halo on `pressed` only (not `hovered`). The Dart `Slider`'s `RoundSliderOverlayShape` paints via `activationAnimation`, which only ramps up during active drag/press in practice — Flutter's Yaru sample shows no halo on plain hover. Including `hovered` here over-painted the accent halo around the thumb whenever the cursor was just resting on it.
         if (pressed && enabled) {
             val overlayAlpha = if (scheme.isLight) 0.4f else 0.7f
             Box(
@@ -328,7 +328,7 @@ fun YaruSlider(
                             // `placeRelative` mirrors the x coordinate against
                             // the parent layout direction — in RTL, the thumb
                             // (and its overlay) end up on the right edge for
-                            // `value == start`, matching Material `Slider`.
+                            // `value == start`, matching the Dart `Slider`.
                             placeable.placeRelative(x.toInt(), 0)
                         }
                     }

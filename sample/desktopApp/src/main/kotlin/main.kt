@@ -5,7 +5,7 @@ import dev.nucleusframework.application.nucleusApplication
 import dev.nucleusframework.yarucompose.window.YaruDecoratedWindow
 import sample.app.App
 
-// Mirrors Dart `MaterialApp(title: 'Yaru')` (example_home.dart:71) for the
+// Mirrors the Dart app title `'Yaru'` (example_home.dart:71) for the
 // app's window-manager title, plus the Linux runner's
 // `gtk_window_set_default_size(window, 700, 720)` / `min_width = 500,
 // min_height = 720` (linux/my_application.cc:50-55) for default + minimum

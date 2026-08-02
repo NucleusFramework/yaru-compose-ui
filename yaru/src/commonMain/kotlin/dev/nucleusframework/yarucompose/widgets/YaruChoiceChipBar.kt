@@ -81,16 +81,16 @@ private val ChipDefaultRunSpacing: Dp = 10.dp
 // in pixels (logical) consumed by `ScrollController.animateTo(±step)`.
 private const val CHIP_NAVIGATION_STEP_PX: Float = 100f
 
-// Defensive: Material 3 `_ChipDefaultsM3` uses `padding: horizontal(8)` (outer) + `labelPadding: horizontal(8)` (inner) = 16dp total horizontal inset around the label. Previously set to 12dp from the Material 2 defaults (`padding(4)` + `labelPadding.horizontal(8)`); Yaru's Dart `ChoiceChip` doesn't override M3, so we need 16dp to match.
+// Defensive: Flutter's `_ChipDefaultsM3` uses `padding: horizontal(8)` (outer) + `labelPadding: horizontal(8)` (inner) = 16dp total horizontal inset around the label. Previously set to 12dp from the older defaults (`padding(4)` + `labelPadding.horizontal(8)`); Yaru's Dart `ChoiceChip` doesn't override them, so we need 16dp to match.
 private val ChipHorizontalPadding: Dp = 16.dp
 
-// Material `Chip._kCheckmarkSize = 18.0` — Yaru replaces the icon glyph
+// Flutter's `Chip._kCheckmarkSize = 18.0` — Yaru replaces the icon glyph
 // (`YaruIcons.ok`) but keeps the surrounding sizing close. We render slightly
 // smaller (16dp) to suit Yaru's icon font, mirroring its compact metrics.
 private val ChipCheckmarkSize: Dp = 16.dp
 
-// Material `Chip._kCheckmarkPadding = 4.0` — gap between the checkmark and
-// the label (yaru_choice_chip_bar.dart inherits from Material). We use 6dp
+// Flutter's `Chip._kCheckmarkPadding = 4.0` — gap between the checkmark and
+// the label (yaru_choice_chip_bar.dart inherits the default). We use 6dp
 // to compensate for the Yaru `ok` glyph's tighter optical bounds.
 private val ChipCheckmarkLabelGap: Dp = 6.dp
 
@@ -103,7 +103,7 @@ private val ChipBorderWidth: Dp = 1.dp
 // `selectedBackgroundColor.withValues(alpha: isHC ? 1 : 0.4)` —
 // `selectedBackgroundColor = isHC ? inverseSurface : (elevatedButtonColor ?? primary)`.
 // from common_themes.dart L651-653 + L659 + L788 (`selectedColor: elevatedButtonColor ?? primary`).
-// Material's `RawChip` paints this as the `Material.color` directly over the
+// Dart's `RawChip` paints this as the surface color directly over the
 // parent surface — no implicit alpha-blend with `colorScheme.surface`.
 private const val CHIP_SELECTED_BG_ALPHA_NON_HC: Float = 0.4f
 private const val CHIP_SELECTED_BG_ALPHA_HC: Float = 1f
@@ -120,14 +120,14 @@ private const val CHIP_SELECTED_BORDER_ALPHA_HC: Float = 1f
 private const val CHIP_DISABLED_BORDER_ALPHA_NON_HC: Float = 0.7f
 private const val CHIP_DISABLED_BORDER_ALPHA_HC: Float = 0.3f
 
-// Material `_ChipDefaultsM3.overlayColor` — pressed `onSurface @ 0.12`,
+// Dart `_ChipDefaultsM3.overlayColor` — pressed `onSurface @ 0.12`,
 // hovered `onSurface @ 0.08`. Yaru also sets a flat overlay of
 // `onSurface @ 0.05` via `_createTabBarTheme.overlayColor`, but `Chip` keeps
-// the Material defaults.
+// the framework defaults.
 private const val CHIP_PRESSED_OVERLAY_ALPHA: Float = 0.12f
 private const val CHIP_HOVERED_OVERLAY_ALPHA: Float = 0.08f
 
-// Material's standard disabled foreground alpha (`_ChipDefaultsM3` derives
+// The standard disabled foreground alpha (`_ChipDefaultsM3` derives
 // `disabledColor = onSurface @ 0.38`).
 private const val CHIP_DISABLED_FG_ALPHA: Float = 0.38f
 
@@ -440,7 +440,7 @@ private fun ChoiceChip(
     // Selected fill: `selectedBackgroundColor @ (isHC ? 1 : 0.4)`
     // from common_themes.dart L659. Unselected fill is transparent; press/hover
     // are drawn as a separate overlay layer on top so the selected base color
-    // stays exact under pressure (matches Material's `ChoiceChip` overlay
+    // stays exact under pressure (matches the Dart `ChoiceChip` overlay
     // stacking — `_ChipDefaultsM3.overlayColor`).
     val backgroundColor = if (selected) {
         selectedBackgroundColor.copy(
@@ -457,7 +457,7 @@ private fun ChoiceChip(
     }
 
     val chip: @Composable () -> Unit = {
-        // Mirrors Flutter's `SizedBox(height: chipHeight)` wrapping the row variant — chips render at the bar's full `chipHeight` (default 34dp). Use `defaultMinSize` (rather than tight `height`) so callers can still grow the chip via a label that exceeds the baseline (e.g. wrapped multi-line labels in `WrapBar`). Adding M3's `padding(vertical = 8)` here would push intrinsic height to ~36dp, which the parent `Row.height(chipHeight)` then clips internally — squeezing the label's 20dp line into 18dp and visibly cropping descenders. We omit that padding deliberately.
+        // Mirrors Flutter's `SizedBox(height: chipHeight)` wrapping the row variant — chips render at the bar's full `chipHeight` (default 34dp). Use `defaultMinSize` (rather than tight `height`) so callers can still grow the chip via a label that exceeds the baseline (e.g. wrapped multi-line labels in `WrapBar`). Adding the stock `padding(vertical = 8)` here would push intrinsic height to ~36dp, which the parent `Row.height(chipHeight)` then clips internally — squeezing the label's 20dp line into 18dp and visibly cropping descenders. We omit that padding deliberately.
         Row(
             modifier = Modifier
                 .defaultMinSize(minHeight = chipHeight)
@@ -468,7 +468,7 @@ private fun ChoiceChip(
                 .let {
                     if (onClick != null) {
                         it
-                            // Mirrors Material `ChoiceChip.mouseCursor` default
+                            // Mirrors Flutter's `ChoiceChip.mouseCursor` default
                             // (`WidgetStateMouseCursor.clickable` →
                             // `SystemMouseCursors.click`).
                             .pointerHoverIcon(PointerIcon.Hand)
@@ -487,7 +487,7 @@ private fun ChoiceChip(
         ) {
             if (selected && showCheckMarks) {
                 // `YaruIcons.ok` — checkmark glyph used by Yaru's themed
-                // `ChoiceChip` (Material `_kCheckmarkSize` ≈ 18; we use 16
+                // `ChoiceChip` (Dart `_kCheckmarkSize` ≈ 18; we use 16
                 // because the Yaru glyph fills its bounds more tightly).
                 // `checkmarkColor: selectedForeGroundColor` from
                 // common_themes.dart L661 — `onInverseSurface` in HC,
@@ -563,7 +563,7 @@ private fun NavigationButton(
                 .let {
                     if (onTap != null) {
                         it
-                            // Mirrors Material `IconButton.mouseCursor` default
+                            // Mirrors Flutter's `IconButton.mouseCursor` default
                             // (`WidgetStateMouseCursor.clickable` →
                             // `SystemMouseCursors.click`).
                             .pointerHoverIcon(PointerIcon.Hand)

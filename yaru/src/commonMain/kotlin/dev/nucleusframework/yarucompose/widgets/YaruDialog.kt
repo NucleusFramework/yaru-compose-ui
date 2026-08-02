@@ -57,7 +57,7 @@ import dev.nucleusframework.yarucompose.themes.scale
  * action button (mirrors the `isCloseable=false` flow in the Dart example).
  *
  * Animation: fade-only enter and exit, 150ms with `Curves.easeOut`. Mirrors
- * Flutter's default `_buildMaterialDialogTransitions` (a single
+ * Flutter's default dialog transition builder (a single
  * `FadeTransition(opacity: CurvedAnimation(parent, curve: Curves.easeOut))`
  * over `_dialogDefaultBarrierDuration = 150ms`); no scale, no slide.
  * `YaruTheme` does not override the dialog transition —
@@ -141,9 +141,9 @@ fun YaruDialog(
 }
 
 /**
- * Hosts a Compose [Dialog] with Material's default dialog transition:
- * 150ms `easeOut` fade only (no scale, no slide), mirroring Flutter's
- * `_buildMaterialDialogTransitions` and `_dialogDefaultBarrierDuration`.
+ * Hosts a Compose [Dialog] with Flutter's default dialog transition:
+ * 150ms `easeOut` fade only (no scale, no slide), mirroring its
+ * transition builder and `_dialogDefaultBarrierDuration`.
  *
  * Compose's `Dialog` has no built-in transitions and unmounts immediately
  * when removed from composition, so we keep an internal
@@ -160,7 +160,7 @@ internal fun YaruAnimatedDialogHost(
     content: @Composable (requestExit: () -> Unit) -> Unit,
 ) {
     // Start hidden, then flip to visible on first composition so the enter
-    // transition runs (Flutter's `_buildMaterialDialogTransitions` plays on
+    // transition runs (Flutter's dialog transition builder plays on
     // mount with the route's animation driver).
     val visibility = remember { MutableTransitionState(false) }
     LaunchedEffect(Unit) { visibility.targetState = true }
@@ -220,12 +220,12 @@ internal fun YaruAnimatedDialogHost(
             // up to the entire screen ("occupe tout l'écran"). With the
             // default `true`, the window sizes to its content — which
             // `YaruDialogSurface` clamps via `widthIn(min=280, max=560)` to
-            // mirror Material's `_DialogDefaults.minWidth = 280` /
-            // `maxWidth = 560` from `material/dialog.dart`.
+            // mirror Flutter's `_DialogDefaults.minWidth = 280` /
+            // `maxWidth = 560` from `dialog.dart`.
         ),
     ) {
-        // Mirrors Flutter's `_buildMaterialDialogTransitions`
-        // (material/dialog.dart): a single `FadeTransition` driven by
+        // Mirrors Flutter's default dialog transition builder
+        // (dialog.dart): a single `FadeTransition` driven by
         // `CurvedAnimation(parent, curve: Curves.easeOut)` over the
         // route's animation duration (`_dialogDefaultBarrierDuration =
         // Duration(milliseconds: 150)`). No scale, no slide. Wrap-content
@@ -269,8 +269,8 @@ fun YaruDialogSurface(
         color = borderColor,
         shape = shape,
     )
-    // Mirrors Material's `_DialogDefaults.minWidth = 280` and
-    // `maxWidth = 560` from `material/dialog.dart` (the `Dialog` widget wraps
+    // Mirrors Flutter's `_DialogDefaults.minWidth = 280` and
+    // `maxWidth = 560` from `dialog.dart` (the `Dialog` widget wraps
     // its child in a `ConstrainedBox(BoxConstraints(minWidth: 280,
     // maxWidth: 560))`). `width(IntrinsicSize.Max)` lets the dialog size
     // itself to the widest child (title bar, content, actions); `widthIn`
@@ -285,12 +285,12 @@ fun YaruDialogSurface(
                     Modifier.widthIn(min = minWidth)
                 },
             )
-            // Material 3 `_DialogDefaultsM3.elevation = 6.0` (material/dialog.dart).
+            // Flutter's `_DialogDefaultsM3.elevation = 6.0` (dialog.dart).
             // Yaru does not override `dialogTheme.elevation` in
-            // `_createDialogTheme` (common_themes.dart L315-331), so the M3
+            // `_createDialogTheme` (common_themes.dart L315-331), so the
             // default of 6 dp applies. Painted before clip/background so the
-            // shadow falls outside the dialog body, mirroring Flutter's
-            // `Material(elevation: 6)` chrome.
+            // shadow falls outside the dialog body, mirroring the Dart
+            // surface's `elevation: 6` chrome.
             .shadow(elevation = 6.dp, shape = shape)
             .clip(shape)
             .background(color = dialogBg, shape = shape)

@@ -86,8 +86,8 @@ data class YaruPopupMenuEntry<T>(
  * A single-select dropdown button styled as a Yaru button — foundation-only.
  *
  * Mirrors `yaru.dart/lib/src/widgets/yaru_popup_menu_button.dart`. Uses
- * Compose Foundation's [Popup] and a [Column] of item rows so the widget
- * has no `androidx.compose.material*` dependency.
+ * Compose Foundation's [Popup] and a [Column] of item rows, so the widget
+ * needs nothing beyond foundation.
  */
 @Composable
 fun <T> YaruPopupMenuButton(
@@ -215,7 +215,7 @@ internal fun YaruPopupMenuSurface(
     // from common_themes.dart `_createPopupMenuTheme` L518:
     //   BorderRadius.circular(10).
     radius: Dp = 10.dp,
-    // Material `_kMenuVerticalPadding = 8` — Yaru does not override this.
+    // Flutter's `_kMenuVerticalPadding = 8` — Yaru does not override this.
     verticalListPadding: Dp = 8.dp,
     content: @Composable () -> Unit,
 ) {
@@ -244,10 +244,10 @@ internal fun YaruPopupMenuSurface(
                     it.width(IntrinsicSize.Max).widthIn(min = safeMinWidth)
                 }
             }
-            // Material `PopupMenuButton` default elevation = 8 (popup_menu.dart
-            // `_PopupMenuRoute.build` → `Material(elevation: route.elevation
-            // ?? popupMenuTheme.elevation ?? 8)`). Yaru does not override
-            // `popupMenuTheme.elevation`, so we mirror the M3 default here so
+            // Dart `PopupMenuButton` default elevation = 8 (popup_menu.dart
+            // `_PopupMenuRoute.build` → `elevation: route.elevation
+            // ?? popupMenuTheme.elevation ?? 8`). Yaru does not override
+            // `popupMenuTheme.elevation`, so we mirror that default here so
             // the menu lifts above hovered content.
             .shadow(
                 elevation = 8.dp,
@@ -262,10 +262,10 @@ internal fun YaruPopupMenuSurface(
                 color = rememberYaruMenuBorder(),
                 shape = shape,
             )
-            // Mirrors `clipBehavior: Clip.antiAlias` on the Material wrapping
+            // Mirrors `clipBehavior: Clip.antiAlias` on the surface wrapping
             // the Dart `PopupMenuButton` (yaru_popup_menu_button.dart L71) and
-            // the Material `_PopupMenuRoute` whose `Material(clipBehavior:
-            // Clip.antiAlias)` clips item hover/press fills to the rounded
+            // the `_PopupMenuRoute` whose own `clipBehavior:
+            // Clip.antiAlias` clips item hover/press fills to the rounded
             // shape. Without this, the rectangular row backgrounds bleed past
             // the 10dp corners of the first and last rows. Same fix as
             // YaruAutocomplete (`clipContent = true`).
@@ -315,10 +315,10 @@ private fun <T> PopupMenuRow(
     val interactionSource = remember { MutableInteractionSource() }
     val hovered by interactionSource.collectIsHoveredAsState()
     val pressed by interactionSource.collectIsPressedAsState()
-    // Material `PopupMenuItem` wraps its child in a plain `InkWell` (no
+    // The Dart `PopupMenuItem` wraps its child in a plain `InkWell` (no
     // `overlayColor` override — see popup_menu.dart `PopupMenuItemState.build`).
     // InkWell falls back to `ThemeData.hoverColor` / `highlightColor`, whose
-    // M3 defaults are `black/white @ 0.04` (hover) and `0.1` (press). Yaru's
+    // Dart defaults are `black/white @ 0.04` (hover) and `0.1` (press). Yaru's
     // `splashFactory: NoSplash` also kills the ripple, so the only feedback
     // is the static overlay — the press value is the highlight color, NOT
     // the splash color.
@@ -331,7 +331,7 @@ private fun <T> PopupMenuRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            // Material `kMinInteractiveDimension = 48` — Yaru does not override
+            // Flutter's `kMinInteractiveDimension = 48` — Yaru does not override
             // `popupMenuTheme.menuPadding` or set a global `visualDensity`.
             .heightIn(min = 48.dp)
             .let {
@@ -355,12 +355,12 @@ private fun <T> PopupMenuRow(
             // Background under the click target so the hover/press overlay
             // spans the entire row width, not just the label.
             .background(background)
-            // Material 3 `_PopupMenuDefaultsM3.menuItemPadding =
-            // EdgeInsets.symmetric(horizontal: 12)` (M2 was 16). Yaru runs M3
-            // (`useMaterial3: true`) and does not override
+            // Dart `_PopupMenuDefaultsM3.menuItemPadding =
+            // EdgeInsets.symmetric(horizontal: 12)` (the older default was 16).
+            // Yaru opts into the newer defaults and does not override
             // `popupMenuTheme.menuPadding`.
             .padding(horizontal = 12.dp)
-            // Material `Theme.disabledColor` is onSurface @ 0.38; the Dart
+            // Dart `Theme.disabledColor` is onSurface @ 0.38; the Dart
             // `Opacity(0.38)` wrapper is reproduced here for parity.
             .alpha(if (entry.enabled) 1f else 0.38f),
         verticalAlignment = Alignment.CenterVertically,
@@ -382,7 +382,7 @@ private fun <T> PopupMenuRow(
         }
         CompositionLocalProvider(
             LocalYaruContentColor provides scheme.onSurface,
-            // M3 `_PopupMenuDefaultsM3.labelTextStyle` returns
+            // Dart `_PopupMenuDefaultsM3.labelTextStyle` returns
             // `_textTheme.labelLarge` (yaru: 14.66sp Normal). The earlier
             // `bodyMedium` matched only because both are 14.66sp Normal in
             // Yaru's typography, but `labelLarge` is the spec-correct ladder

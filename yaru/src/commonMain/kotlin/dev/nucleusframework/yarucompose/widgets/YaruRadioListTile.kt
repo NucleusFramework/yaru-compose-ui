@@ -17,7 +17,7 @@ import dev.nucleusframework.yarucompose.themes.YaruConstants
  * A [YaruListTile] paired with a [YaruRadio]. Tapping the row selects [value].
  *
  * Mirrors `yaru.dart/lib/src/widgets/yaru_radio_list_tile.dart`. Foundation-
- * only — uses `YaruListTile` instead of Material3 `ListItem`. The inner
+ * only — the row is a plain `YaruListTile`. The inner
  * radio is rendered with `hasFocusBorder = false` so the surrounding
  * [YaruFocusBorder] (when [hasFocusBorder] is true) is the single source
  * of focus styling — matching the Dart implementation.

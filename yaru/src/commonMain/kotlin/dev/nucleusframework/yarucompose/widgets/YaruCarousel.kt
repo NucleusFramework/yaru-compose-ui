@@ -100,9 +100,9 @@ private val CarouselIndicatorDotSize: Dp = 12.dp
 
 // Carousel navigation button size: rendered as a circular `OutlinedButton`
 // (CircleBorder) in yaru_carousel.dart. Yaru does not override the size, so
-// Material's stock `OutlinedButton.minimumSize` (Size(64,36)) defines the
-// touch target. We render a 40dp circle (a common Material 3 icon-button
-// sizing) since Compose does not have a CircleBorder-shaped OutlinedButton.
+// Flutter's stock `OutlinedButton.minimumSize` (Size(64,36)) defines the
+// touch target. We render a 40dp circle (a common icon-button sizing) since
+// Compose has no CircleBorder-shaped OutlinedButton.
 private val CarouselNavButtonSize: Dp = 40.dp
 
 // Margin between the navigation button and the carousel edge, matches the
@@ -279,7 +279,7 @@ fun YaruCarousel(
                             if (!active) {
                                 it
                                     // Mirrors Dart `GestureDetector` peek-page tap
-                                    // wrapped in a Material `InkWell` whose default
+                                    // wrapped in an `InkWell` whose default
                                     // `WidgetStateMouseCursor.clickable` resolves
                                     // to `SystemMouseCursors.click` (yaru_carousel.dart
                                     // peek pages are tappable when not active).
@@ -477,7 +477,7 @@ private fun BoxScope.CarouselNavButton(
                     .let {
                         if (enabled) {
                             it
-                                // Mirrors Material `OutlinedButton.mouseCursor`
+                                // Mirrors Flutter's `OutlinedButton.mouseCursor`
                                 // default (`WidgetStateMouseCursor.clickable` →
                                 // `SystemMouseCursors.click`) used by the
                                 // carousel nav button in yaru_carousel.dart.

@@ -25,8 +25,8 @@ import kotlinx.coroutines.launch
  *
  * Mirrors `YaruThemeData` from `yaru.dart/lib/src/settings/inherited_theme.dart`
  * (lines 295-306). Flutter-only fields (`extensions`, `pageTransitionsTheme`,
- * `useMaterial3`, `visualDensity`) are intentionally omitted — they have no
- * Compose Material3 equivalent.
+ * `visualDensity`, and the design-system opt-in flag) are intentionally
+ * omitted — they have no Compose equivalent.
  */
 @Immutable
 data class YaruThemeData(
@@ -53,11 +53,11 @@ data class YaruThemeData(
 val LocalYaruTheme = compositionLocalOf<YaruThemeData?> { null }
 
 /**
- * Wraps [content] with a Material/Yaru theme whose variant and high-contrast
- * flag follow the supplied [data] and live updates from [settings].
+ * Wraps [content] with a Yaru theme whose variant and high-contrast flag
+ * follow the supplied [data] and live updates from [settings].
  *
  * Equivalent to the `YaruTheme` widget in Dart (the Composable named
- * [dev.nucleusframework.yarucompose.themes.YaruTheme] applies the Material3 theme;
+ * [dev.nucleusframework.yarucompose.themes.YaruTheme] applies the theme;
  * this wrapper additionally exposes [YaruThemeData] through [LocalYaruTheme]).
  */
 @Composable

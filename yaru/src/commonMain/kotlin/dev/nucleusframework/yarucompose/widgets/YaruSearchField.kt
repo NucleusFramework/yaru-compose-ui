@@ -55,7 +55,7 @@ import dev.nucleusframework.yarucompose.themes.scale
 enum class YaruSearchFieldStyle { Filled, Outlined, FilledOutlined }
 
 /**
- * A pill-shaped search text field — foundation-only, no Material3.
+ * A pill-shaped search text field — foundation-only.
  *
  * Mirrors `yaru.dart/lib/src/widgets/yaru_search_field.dart`. Pressing
  * `Escape` clears the field. Renders its own filled / outlined decoration so
@@ -316,7 +316,7 @@ fun YaruSearchButton(
             iconSize = YaruConstants.IconSize,
             // Pin the YaruIconButton's outer state-layer to the search-button
             // pill size (34 dp by default). Without this, [YaruIconButton]
-            // would default `minimumSize = 40` (M3 default for IconButton)
+            // would default `minimumSize = 40` (the stock IconButton default)
             // and the Modifier.size clamp from the outer Box would visually
             // shrink the state-layer to 34 — but the icon centring math
             // still uses the 40 dp box, so the glyph drifts off-centre.

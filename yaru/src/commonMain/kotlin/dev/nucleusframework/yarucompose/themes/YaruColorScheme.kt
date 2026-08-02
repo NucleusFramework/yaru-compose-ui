@@ -5,9 +5,9 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 /**
- * Self-contained color scheme — a Material3-free counterpart to
- * `androidx.compose.material3.ColorScheme`. Field names match the Material
- * spec (so existing migrations are mechanical) but the type is owned by us.
+ * Self-contained color scheme owned by this library. Field names follow the
+ * conventional role naming (surface / onSurface / primary / …) so mapping to
+ * or from another design system stays mechanical.
  *
  * The values come from `_createYaruTheme` in
  * `yaru.dart/lib/src/themes/common_themes.dart`.

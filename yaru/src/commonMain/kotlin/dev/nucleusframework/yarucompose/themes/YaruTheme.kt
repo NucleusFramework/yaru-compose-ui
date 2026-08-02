@@ -13,7 +13,7 @@ import dev.nucleusframework.yarucompose.window.LocalNativeWindowSync
  * Mirrors `yaru.dart/lib/src/themes/yaru.dart`. Provides every Yaru
  * `CompositionLocal` (color scheme, typography, content color, icon font,
  * divider color, indication) so descendant Yaru widgets can read them
- * without any `androidx.compose.material*` dependency.
+ * with nothing beyond Compose foundation.
  */
 @Composable
 fun YaruTheme(
@@ -51,7 +51,7 @@ fun YaruTheme(
         LocalYaruColorScheme provides yaruScheme,
         LocalYaruTypography provides typography,
         LocalYaruContentColor provides yaruScheme.onSurface,
-        // Default body text style — equivalent of Material's `DefaultTextStyle`
+        // Default body text style — equivalent of Flutter's `DefaultTextStyle`
         // applied via `Theme(textTheme:)`. Without this, every `YaruText` that
         // doesn't pass an explicit style would fall back to `TextStyle.Default`
         // and render in the platform font instead of Ubuntu.

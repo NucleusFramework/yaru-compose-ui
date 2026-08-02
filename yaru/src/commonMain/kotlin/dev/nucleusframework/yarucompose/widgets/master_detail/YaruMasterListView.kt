@@ -50,7 +50,7 @@ fun YaruMasterListView(
         showStart = startUndershoot,
         showEnd = endUndershoot,
     ) {
-        // Mirrors Flutter's `MaterialScrollBehavior` adding a `Scrollbar`
+        // Mirrors Flutter's default `ScrollBehavior` adding a `Scrollbar`
         // around scrollables on desktop/web — Yaru's
         // `ScrollbarThemeData` (common_themes.dart:783-793) supplies the
         // 4dp/8dp thickness map that `YaruScrollbar` reproduces here.

@@ -39,14 +39,14 @@ import dev.nucleusframework.yarucompose.themes.scale
 import kotlin.math.ln
 
 /**
- * A colorable, tappable banner — foundation-only, no Material3 dependency.
+ * A colorable, tappable banner — foundation-only.
  *
  * Mirrors `yaru.dart/lib/src/widgets/yaru_banner.dart`. Yaru's spec is a flat
  * card with a hairline divider-color border, no shadow, optional selected
  * state painting an 80%-primary tint over the content.
  *
- * Layering reproduces Dart's `Material > InkWell > Card > Container > child`.
- * The OUTER chrome (Material + InkWell) draws at radius 12 over the full
+ * Layering reproduces Dart's `Surface > InkWell > Card > Container > child`.
+ * The OUTER chrome (surface + InkWell) draws at radius 12 over the full
  * caller bounds and carries the selected tint + hover overlay + click region.
  * The INNER chrome (Card body) is inset by Flutter's default Card margin of
  * 4 dp and uses radius `12 − 4/2 = 10` (BorderRadius.inner({all:4}) — see
@@ -62,7 +62,7 @@ import kotlin.math.ln
  *  - border = `theme.dividerColor`, `width: 0` (hairline ≈ 1 px) (L114)
  *  - hover overlay = `onSurface @ 0.1` (L103)
  *  - selected overlay = `primary @ 0.8` (L126)
- *  - elevation default = 1, drives M3 `surfaceTint` overlay (L109)
+ *  - elevation default = 1, drives the `surfaceTint` overlay (L109)
  *  - content padding default = `EdgeInsets.all(kYaruPagePadding)` = 20 (L14, constants L2)
  *  - optional [YaruFocusBorder] when `hasFocusBorder` is true
  */
@@ -109,11 +109,11 @@ fun YaruBanner(
     val defaultSurfaceTint = remember(scheme) {
         scheme.surface.scale(lightness = if (scheme.isLight) 0f else 0.03f)
     }
-    // Material3 surface-tint overlay alpha = (4.5 * ln(elevation+1) + 2) / 100,
-    // clamped at the M3 elevation-24 ceiling. At elevation 1 (Yaru default) this
-    // resolves to ~0.0512 — matching Flutter's `Card` rendering when
-    // `surfaceTintColor` is set on Material 3. Source: Flutter's
-    // `_surfaceTintAlphaForElevation` (material/elevation_overlay.dart).
+    // Surface-tint overlay alpha = (4.5 * ln(elevation+1) + 2) / 100, clamped
+    // at the elevation-24 ceiling. At elevation 1 (Yaru default) this resolves
+    // to ~0.0512 — matching Flutter's `Card` rendering when `surfaceTintColor`
+    // is set. Source: Flutter's `_surfaceTintAlphaForElevation`
+    // (elevation_overlay.dart).
     // Defensive clamp: `ln(x)` with `x <= 0` returns NaN/-Infinity which would
     // poison the resulting alpha and the lerp below. NaN bypasses
     // `coerceAtLeast` (NaN comparisons all return false), so reject non-finite
@@ -164,13 +164,13 @@ fun YaruBanner(
     // primaryColor.withValues(alpha: 0.8) from yaru_banner.dart L126.
     val selectedOverlay = if (selected) scheme.primary.copy(alpha = 0.8f) else Color.Transparent
 
-    // OUTER chrome: Material > InkWell layer. Spans the caller's full bounds
-    // (e.g. the 200dp grid cell). Carries the selected tint (Material color),
+    // OUTER chrome: surface > InkWell layer. Spans the caller's full bounds
+    // (e.g. the 200dp grid cell). Carries the selected tint (surface color),
     // the hover overlay (InkWell hoverColor), and the click region.
     // Defensive: do NOT prepend `modifier` here — the outermost layout node is the YaruFocusBorder (or fallback Box) below; applying caller modifiers there guarantees `.weight(1f)` / `.padding(...)` size the entire banner, focus ring included.
     val outerChrome: Modifier = Modifier
         .clip(outerShape)
-        // Material(color: selected ? primary@0.8 : transparent) — yaru_banner.dart L124-127.
+        // Surface color: selected ? primary@0.8 : transparent — yaru_banner.dart L124-127.
         .background(selectedOverlay)
         .let {
             if (onTap != null) {
@@ -232,7 +232,7 @@ fun YaruBanner(
     // lays child at top-start" — that interpretation IS literally correct for
     // a bare `Container`, but Flutter's actual rendering of `YaruBanner.tile`
     // ends up centering the inner `YaruTile` because the surrounding
-    // `Material > InkWell > Card` chain assigns intrinsic constraints that
+    // `Surface > InkWell > Card` chain assigns intrinsic constraints that
     // make the tile naturally centered in the 200dp grid cell. Forcing
     // `Alignment.Center` here is the only way to reproduce that visual in
     // Compose without re-implementing the whole Flutter render-object

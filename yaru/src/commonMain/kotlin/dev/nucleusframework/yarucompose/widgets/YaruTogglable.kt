@@ -5,9 +5,9 @@ package dev.nucleusframework.yarucompose.widgets
  * (`YaruCheckbox`, `YaruRadio`, `YaruSwitch`).
  *
  * Mirrors the abstract `YaruTogglable` from
- * `yaru.dart/lib/src/widgets/yaru_togglable.dart`. In Compose the rendering
- * happens inside Material3 components — this interface only captures the
- * shared parameters so callers can write generic toggle helpers.
+ * `yaru.dart/lib/src/widgets/yaru_togglable.dart`. In Compose each concrete
+ * widget paints itself — this interface only captures the shared parameters
+ * so callers can write generic toggle helpers.
  */
 interface YaruTogglable<T> {
     val value: T

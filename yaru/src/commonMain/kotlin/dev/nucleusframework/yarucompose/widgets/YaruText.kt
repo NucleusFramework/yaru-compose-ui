@@ -22,15 +22,13 @@ import dev.nucleusframework.yarucompose.themes.LocalYaruTextSoftWrap
 import dev.nucleusframework.yarucompose.themes.LocalYaruTextStyle
 
 /**
- * Text rendering primitive used across all Yaru widgets — fully foundation,
- * no `androidx.compose.material*` dependency. Reads the active text style
- * from [LocalYaruTextStyle] and falls back to [LocalYaruContentColor] when
- * the resolved style has no color.
+ * Text rendering primitive used across all Yaru widgets — fully foundation.
+ * Reads the active text style from [LocalYaruTextStyle] and falls back to
+ * [LocalYaruContentColor] when the resolved style has no color.
  *
  * Compose-only — yaru.dart has no direct counterpart since Flutter's
  * `Text` already inherits its style from `DefaultTextStyle`. This widget
- * fills the same role for Compose Multiplatform without pulling in
- * `androidx.compose.material*`.
+ * fills the same role for Compose Multiplatform.
  */
 @Composable
 fun YaruText(
@@ -57,8 +55,8 @@ fun YaruText(
     // regardless of the inherited TextStyle. We force 0.sp here unless the
     // caller passes an explicit override — guarantees identical glyph
     // tracking on every platform (Android/JVM/iOS/Web), and shields against
-    // a parent providing a Material TextStyle with a non-zero default
-    // (e.g. M3 bodyMedium ships with letterSpacing = 0.25.sp). Also sanitise
+    // a parent providing a foreign TextStyle with a non-zero default
+    // (many type scales ship bodyMedium with letterSpacing = 0.25.sp). Also sanitise
     // a caller-supplied override — a NaN / ±Infinity TextUnit (stale animation,
     // bad arithmetic) would crash skia paragraph layout.
     val resolvedLetterSpacing =
@@ -145,8 +143,8 @@ fun YaruText(
 }
 
 /**
- * Provide a default text style for a subtree — equivalent to wrapping a
- * Material3 `LocalTextStyle` provider but tied to our [LocalYaruTextStyle].
+ * Provide a default text style for a subtree — the [LocalYaruTextStyle]
+ * counterpart of a generic `LocalTextStyle` provider.
  */
 @Composable
 fun YaruProvideTextStyle(

@@ -91,7 +91,6 @@ import sample.app.pages.SelectableContainerPage
 import sample.app.pages.SplitButtonPage
 import sample.app.pages.SwitchPage
 import sample.app.pages.TabBarPage
-import sample.app.pages.ThemePage
 import sample.app.pages.TilePage
 import sample.app.pages.WindowControlsPage
 
@@ -120,12 +119,6 @@ private data class SamplePage(
  * mappings line by line.
  */
 private val SamplePages: List<SamplePage> = listOf(
-    // Material Components — example_page_items.dart:355-361.
-    SamplePage(
-        title = "Material Components, using Yaru Material Themes",
-        iconGlyph = YaruIcons.colors,
-        selectedIconGlyph = YaruIcons.colors_filled,
-    ) { ThemePage() },
     // example_page_items.dart:64-72.
     SamplePage(
         title = "YaruAutocomplete",

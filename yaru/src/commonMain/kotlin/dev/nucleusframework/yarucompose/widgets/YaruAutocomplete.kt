@@ -52,12 +52,11 @@ import dev.nucleusframework.yarucompose.themes.LocalYaruTypography
 import dev.nucleusframework.yarucompose.themes.YaruConstants
 
 /**
- * Yaru-styled autocomplete text field — foundation-only, no Material3.
+ * Yaru-styled autocomplete text field — foundation-only.
  *
  * Mirrors `yaru.dart/lib/src/widgets/yaru_autocomplete.dart`. Uses
  * [YaruTextField] for the input and a Foundation [Popup] containing a
- * [Column] of suggestions. Material3's `ExposedDropdownMenuBox` is
- * intentionally avoided.
+ * [Column] of suggestions; no third-party dropdown container is involved.
  *
  *  - [optionsBuilder]      — recomputed for every query change.
  *  - [displayStringForOption] — converts an option to the visible string.
@@ -259,10 +258,10 @@ private fun <T : Any> AutocompletePopup(
                     }
                 }
                 .heightIn(max = safeMaxHeight)
-                // Material `MenuAnchor` / `_createMenuStyle.elevation = 1`
+                // Dart `MenuAnchor` / `_createMenuStyle.elevation = 1`
                 // (common_themes.dart L558). Yaru autocomplete renders inside
                 // a `YaruBorderContainer` but the underlying menu still gets
-                // M3's 1dp lift; mirror it so the panel reads as floating.
+                // the 1dp lift; mirror it so the panel reads as floating.
                 .shadow(
                     elevation = 1.dp,
                     shape = RoundedCornerShape(YaruConstants.ContainerRadius),
@@ -318,12 +317,12 @@ private fun AutocompleteRow(
             }
         }
     }
-    // Material 3 `_MenuButtonDefaultsM3.overlayColor`
+    // Dart `_MenuButtonDefaultsM3.overlayColor`
     // (menu_anchor.dart L4148-4163): hover = onSurface @ 0.08,
     // pressed = onSurface @ 0.1, focused = onSurface @ 0.1. The keyboard-
     // highlighted row uses the same value as `Theme.of(context).focusColor`
     // — Yaru's `focusColor` resolves to `onSurface.withOpacity(0.1)` via the
-    // M3 default in `common_themes.dart`.
+    // default in `common_themes.dart`.
     val background = when {
         pressed -> scheme.onSurface.copy(alpha = 0.1f)
         hovered -> scheme.onSurface.copy(alpha = 0.08f)
@@ -337,7 +336,7 @@ private fun AutocompleteRow(
             // `minimumSize = Size(20, kYaruButtonHeight + 10) = (20, 44)`.
             .heightIn(min = YaruConstants.ButtonHeight + 10.dp)
             .hoverable(interactionSource)
-            // Mirrors Material `MenuItemButton.mouseCursor` default
+            // Mirrors Flutter's `MenuItemButton.mouseCursor` default
             // (`WidgetStateMouseCursor.clickable` → `SystemMouseCursors.click`).
             .pointerHoverIcon(PointerIcon.Hand)
             .clickable(
@@ -348,7 +347,7 @@ private fun AutocompleteRow(
             // Background under the click target so the hover/press overlay
             // spans the full row width, not just the label.
             .background(background)
-            // Material `MenuItemButton` default horizontal padding (Yaru
+            // Dart `MenuItemButton` default horizontal padding (Yaru
             // does not override `_createMenuItemTheme.padding`).
             .padding(horizontal = 12.dp),
         // Defensive: `heightIn(min = 44.dp)` makes each row taller than its glyph; without an explicit centering alignment the YaruText defaults to TopStart, leaving the label visually pinned to the top of the row.

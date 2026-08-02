@@ -102,7 +102,7 @@ fun YaruColorDisk(
                     // (e.g. a `PopupMenuItem` row) drives selection instead.
                     if (onPressed != null) {
                         Modifier
-                            // Mirrors Material `TextButton.mouseCursor` default
+                            // Mirrors Flutter's `TextButton.mouseCursor` default
                             // (`WidgetStateMouseCursor.clickable` →
                             // `SystemMouseCursors.click`) used by the inner
                             // `TextButton(onPressed: onPressed)` in

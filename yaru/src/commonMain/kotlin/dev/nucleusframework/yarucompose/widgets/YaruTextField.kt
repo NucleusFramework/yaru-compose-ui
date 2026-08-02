@@ -80,7 +80,7 @@ fun YaruTextField(
         else -> baseBorder
     }
     val borderWidth = if (focused) YaruConstants.FocusBorderWidth else 1.dp
-    // Defensive: dim the text/cursor color when disabled — Material's InputDecoration disabled foreground is `onSurface @ 0.38` (yaru.dart inherits this default).
+    // Defensive: dim the text/cursor color when disabled — the Dart `InputDecoration` disabled foreground is `onSurface @ 0.38` (yaru.dart inherits this default).
     val resolvedTextColor = if (enabled) scheme.onSurface else scheme.onSurface.copy(alpha = 0.38f)
     val textStyle = typography.bodyMedium.copy(color = resolvedTextColor)
     // Defensive: also dim the placeholder so a disabled empty field reads as inactive instead of showing a full-strength hint.
@@ -165,7 +165,7 @@ fun YaruTextField(
         else -> baseBorder
     }
     val borderWidth = if (focused) YaruConstants.FocusBorderWidth else 1.dp
-    // Defensive: dim the text/cursor color when disabled — Material's InputDecoration disabled foreground is `onSurface @ 0.38` (yaru.dart inherits this default).
+    // Defensive: dim the text/cursor color when disabled — the Dart `InputDecoration` disabled foreground is `onSurface @ 0.38` (yaru.dart inherits this default).
     val resolvedTextColor = if (enabled) scheme.onSurface else scheme.onSurface.copy(alpha = 0.38f)
     val textStyle: TextStyle = typography.bodyMedium.copy(color = resolvedTextColor)
     // Defensive: also dim the placeholder so a disabled empty field reads as inactive instead of showing a full-strength hint.

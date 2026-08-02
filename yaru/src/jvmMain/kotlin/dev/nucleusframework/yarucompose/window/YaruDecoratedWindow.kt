@@ -43,7 +43,7 @@ import dev.nucleusframework.yarucompose.themes.YaruConstants
 
 /**
  * Yaru-styled wrapper for Nucleus' `DecoratedWindow` — the YaruCompose
- * counterpart of `JewelDecoratedWindow` / `MaterialDecoratedWindow`.
+ * counterpart of Nucleus' other design-system wrappers (e.g. `JewelDecoratedWindow`).
  *
  * The window is client-side decorated: no system title bar, the Yaru
  * headerbar *is* the chrome. It wires the widgets to the windowing layer so

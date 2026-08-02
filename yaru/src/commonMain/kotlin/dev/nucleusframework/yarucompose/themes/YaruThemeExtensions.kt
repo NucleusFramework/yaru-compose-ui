@@ -7,7 +7,7 @@ import androidx.compose.ui.graphics.luminance
 /**
  * Yaru-specific helpers — Foundation-only.
  *
- * Mirrors `yaru.dart/lib/src/themes/extensions.dart`. The original Material3
+ * Mirrors `yaru.dart/lib/src/themes/extensions.dart`. The original Dart
  * extensions on `ColorScheme` have been removed; equivalents on
  * [YaruColorScheme] live in `YaruColorScheme.kt`.
  */

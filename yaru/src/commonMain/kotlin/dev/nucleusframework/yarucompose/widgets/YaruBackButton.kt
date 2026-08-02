@@ -13,7 +13,7 @@ import dev.nucleusframework.yarucompose.icons.YaruIcons
 enum class YaruBackButtonStyle { Rounded, Square }
 
 /**
- * Yaru-styled back button — foundation-only, no Material3 dependency.
+ * Yaru-styled back button — foundation-only.
  *
  * Mirrors `yaru.dart/lib/src/widgets/yaru_back_button.dart`:
  *  - [YaruBackButtonStyle.Rounded]: shape = `CircleBorder`, wrapped in a
@@ -23,7 +23,7 @@ enum class YaruBackButtonStyle { Rounded, Square }
  *    here).
  *
  * Accessibility / tooltip:
- *  - Dart sources the tooltip from `MaterialLocalizations.backButtonTooltip`
+ *  - Dart sources the tooltip from the framework's `backButtonTooltip`
  *    ("Back" in en_US). Compose multiplatform commonMain has no equivalent
  *    locale-aware string, so [tooltip] defaults to the English literal.
  *    Callers should override with a localized value when available.
