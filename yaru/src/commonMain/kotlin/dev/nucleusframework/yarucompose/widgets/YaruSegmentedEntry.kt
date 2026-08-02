@@ -6,9 +6,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -73,6 +75,10 @@ fun YaruSegmentedEntry(
     contentPadding: PaddingValues = PaddingValues(start = 12.dp, end = 12.dp, top = 10.dp, bottom = 9.dp),
     filled: Boolean = true,
     isError: Boolean = false,
+    // Mirrors `InputDecoration.errorText` from the Dart `decoration` parameter:
+    // when non-null the border switches to the error color and the text is
+    // rendered below the field.
+    errorText: String? = null,
     autofocus: Boolean = false,
     onChanged: ((String) -> Unit)? = null,
     trailing: @Composable (() -> Unit)? = null,
@@ -108,7 +114,7 @@ fun YaruSegmentedEntry(
     // Mirrors `_createInputDecorationTheme` (common_themes.dart L48-50):
     // high-contrast themes use `outlineVariant`, others use `outline`.
     val borderColor = when {
-        isError -> scheme.error
+        isError || errorText != null -> scheme.error
         hasFocus -> scheme.primary
         scheme.isHighContrast -> scheme.outlineVariant
         else -> scheme.outline
@@ -220,6 +226,7 @@ fun YaruSegmentedEntry(
         onFocusFromNextNode = onFocusFromNext,
         modifier = modifier,
     ) {
+        Column {
         // Mirrors yaru.dart's `TextFormField`-based rendering: numeric segments
         // and delimiters always paint left-to-right because digits are LTR
         // (Unicode BiDi-class L). Forcing `LayoutDirection.Ltr` on the segment
@@ -299,6 +306,21 @@ fun YaruSegmentedEntry(
                 Spacer(modifier = Modifier.weight(1f))
                 Box(modifier = Modifier.padding(start = 8.dp)) { trailing() }
             }
+        }
+        }
+        // Mirrors Flutter's `InputDecorator` subtext line: the error renders
+        // below the container in `bodySmall` + error color, indented to the
+        // field's content start. Rendered outside the forced-LTR provider so
+        // prose error messages follow the ambient layout direction.
+        if (!errorText.isNullOrEmpty()) {
+            YaruText(
+                text = errorText,
+                style = typography.bodySmall.copy(color = scheme.error),
+                modifier = Modifier.padding(
+                    top = 4.dp,
+                    start = safeContentPadding.calculateStartPadding(layoutDirection),
+                ),
+            )
         }
         }
     }

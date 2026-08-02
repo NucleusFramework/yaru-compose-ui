@@ -39,7 +39,18 @@ private const val DateDelimiter = "/"
 private const val YearPlaceholder = "y"
 private const val MonthPlaceholder = "m"
 private const val DayPlaceholder = "d"
+// Dart falls back to `MaterialLocalizations.invalidDateFormatLabel` /
+// `dateOutOfRangeLabel`; these are the en-locale strings, hardcoded for the
+// same reason as `DateDelimiter` above.
+private const val InvalidFormatLabel = "Invalid format."
+private const val OutOfRangeLabel = "Out of range."
 // endregion
+
+/** Mirrors `SelectableDateTimePredicate` from `yaru_date_time_entry.dart`. */
+typealias SelectableDateTimePredicate = (LocalDateTime) -> Boolean
+
+/** Mirrors `SelectableTimeOfDayPredicate` from `yaru_date_time_entry.dart`. */
+typealias SelectableTimeOfDayPredicate = (LocalTime) -> Boolean
 
 /** AM/PM marker, mirrors `DayPeriod` from the Flutter framework. */
 enum class YaruDayPeriod { AM, PM }
@@ -177,6 +188,14 @@ fun YaruDateTimeEntry(
     // en_US for parity with the Dart sample on macOS / Linux defaults.
     force24HourFormat: Boolean = false,
     onChanged: ((LocalDateTime?) -> Unit)? = null,
+    // Mirror `selectableDateTimePredicate`, `errorFormatText`,
+    // `errorInvalidText`, and `acceptEmpty` from yaru.dart. The Dart widget
+    // surfaces validation through the enclosing `Form`; without one on KMP the
+    // entry validates live and shows the error text under the field.
+    selectableDateTimePredicate: SelectableDateTimePredicate? = null,
+    errorFormatText: String? = null,
+    errorInvalidText: String? = null,
+    acceptEmpty: Boolean = true,
     autofocus: Boolean = false,
     showClearButton: Boolean = true,
 ) {
@@ -193,6 +212,10 @@ fun YaruDateTimeEntry(
         lastDateTime = lastDateTime,
         force24HourFormat = force24HourFormat,
         onChanged = onChanged,
+        selectableDateTimePredicate = selectableDateTimePredicate,
+        errorFormatText = errorFormatText,
+        errorInvalidText = errorInvalidText,
+        acceptEmpty = acceptEmpty,
         modifier = modifier,
         autofocus = autofocus,
         showClearButton = showClearButton,
@@ -217,6 +240,13 @@ fun YaruTimeEntry(
     // [YaruDateTimeEntry] for why null defaults to 12-hour.
     force24HourFormat: Boolean = false,
     onChanged: ((LocalTime?) -> Unit)? = null,
+    // See [YaruDateTimeEntry] — mirrors `selectableTimeOfDayPredicate` and the
+    // error/acceptEmpty trio, adapted to [LocalTime] like the Dart
+    // `_predicateCallbackAdapter`.
+    selectableTimeOfDayPredicate: SelectableTimeOfDayPredicate? = null,
+    errorFormatText: String? = null,
+    errorInvalidText: String? = null,
+    acceptEmpty: Boolean = true,
     autofocus: Boolean = false,
     showClearButton: Boolean = true,
 ) {
@@ -235,6 +265,12 @@ fun YaruTimeEntry(
         onChanged = onChanged?.let { cb ->
             { dt -> cb(dt?.let { LocalTime(it.hour, it.minute) }) }
         },
+        selectableDateTimePredicate = selectableTimeOfDayPredicate?.let { predicate ->
+            { dt -> predicate(LocalTime(dt.hour, dt.minute)) }
+        },
+        errorFormatText = errorFormatText,
+        errorInvalidText = errorInvalidText,
+        acceptEmpty = acceptEmpty,
         modifier = modifier,
         autofocus = autofocus,
         showClearButton = showClearButton,
@@ -262,6 +298,11 @@ private class DateTimeEntryHolder(
     // identities (see `DateTimeEntryImpl`), and capturing the initial lambda
     // would otherwise leak stale state into segment / controller callbacks.
     var onChanged: ((LocalDateTime?) -> Unit)?,
+    // Validation inputs — `var` for the same refresh-on-recomposition reason.
+    var selectableDateTimePredicate: SelectableDateTimePredicate?,
+    var errorFormatText: String?,
+    var errorInvalidText: String?,
+    var acceptEmpty: Boolean,
 ) : RememberObserver {
 
     /** True while a segment update is being driven by the controller — avoids feedback loops. */
@@ -579,6 +620,35 @@ private class DateTimeEntryHolder(
         }.getOrNull()
     }
 
+    /** Mirrors `_isValidAcceptableDate` from yaru.dart line 625-631. */
+    private fun isValidAcceptableDate(date: LocalDateTime?): Boolean =
+        date != null &&
+            date >= firstDateTime &&
+            date <= lastDateTime &&
+            selectableDateTimePredicate?.invoke(date) != false
+
+    /**
+     * Mirrors `_validateDateTime` from yaru.dart line 671-691, minus the
+     * `Form` plumbing: returns the error text to render under the field, or
+     * null when the current input is acceptable. Reading the segment values
+     * here makes the result observable when called from composition.
+     */
+    fun validateDateTime(): String? {
+        val dateTime = tryParseSegments()
+        return when {
+            dateTime == null -> {
+                val allEmpty = daySegment.value == null &&
+                    monthSegment.value == null &&
+                    yearSegment.value == null &&
+                    hourSegment.value == null &&
+                    minuteSegment.value == null
+                if (allEmpty && acceptEmpty) null else errorFormatText ?: InvalidFormatLabel
+            }
+            !isValidAcceptableDate(dateTime) -> errorInvalidText ?: OutOfRangeLabel
+            else -> null
+        }
+    }
+
     // RememberObserver lifecycle: tear down when the holder leaves composition.
     override fun onAbandoned() = dispose()
     override fun onForgotten() = dispose()
@@ -599,6 +669,10 @@ private fun DateTimeEntryImpl(
     lastDateTime: LocalDateTime,
     force24HourFormat: Boolean,
     onChanged: ((LocalDateTime?) -> Unit)?,
+    selectableDateTimePredicate: SelectableDateTimePredicate?,
+    errorFormatText: String?,
+    errorInvalidText: String?,
+    acceptEmpty: Boolean,
     modifier: Modifier,
     autofocus: Boolean,
     showClearButton: Boolean,
@@ -612,12 +686,20 @@ private fun DateTimeEntryImpl(
             lastDateTime = lastDateTime,
             force24HourFormat = force24HourFormat,
             onChanged = onChanged,
+            selectableDateTimePredicate = selectableDateTimePredicate,
+            errorFormatText = errorFormatText,
+            errorInvalidText = errorInvalidText,
+            acceptEmpty = acceptEmpty,
         )
     }
 
     // Refresh the captured `onChanged` lambda on every recomposition so
     // segment/controller listeners always invoke the latest caller closure.
     holder.onChanged = onChanged
+    holder.selectableDateTimePredicate = selectableDateTimePredicate
+    holder.errorFormatText = errorFormatText
+    holder.errorInvalidText = errorInvalidText
+    holder.acceptEmpty = acceptEmpty
 
     DisposableEffect(holder) {
         holder.attachSegmentListeners()
@@ -639,6 +721,11 @@ private fun DateTimeEntryImpl(
         delimiters = holder.delimiters,
         controller = holder.segmentedController,
         modifier = modifier,
+        // The Dart widget wires `_validateDateTime` as the `TextFormField`
+        // validator and relies on the enclosing `Form` to trigger it; here the
+        // segment values are snapshot state, so reading them makes validation
+        // live.
+        errorText = holder.validateDateTime(),
         autofocus = autofocus,
         trailing = trailing,
     )

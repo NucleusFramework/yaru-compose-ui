@@ -42,6 +42,12 @@ fun DateTimeEntryPage() {
             title = "Date and time",
             sourceCode = GallerySources.DateTimeEntryExample,
         ) { DateTimeEntryExample() }
+        ExampleCard(
+            title = "Validation",
+            description = "`firstTime`/`lastTime` bound the accepted range; " +
+                "out-of-range input shows `errorInvalidText` under the field.",
+            sourceCode = GallerySources.TimeEntryValidationExample,
+        ) { TimeEntryValidationExample() }
     }
 }
 
@@ -79,6 +85,20 @@ private fun TimeEntryExample() {
     Column(modifier = Modifier.width(EntryWidth), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         YaruTimeEntry(controller = controller)
         YaruText(value?.toString() ?: "null")
+    }
+}
+
+@GalleryExample("YaruDateTimeEntry", "Validation")
+@Composable
+private fun TimeEntryValidationExample() {
+    Column(modifier = Modifier.width(EntryWidth), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        YaruTimeEntry(
+            initialTimeOfDay = LocalTime(20, 30),
+            firstTime = LocalTime(8, 0),
+            lastTime = LocalTime(18, 0),
+            force24HourFormat = true,
+            errorInvalidText = "Pick a time between 08:00 and 18:00",
+        )
     }
 }
 
