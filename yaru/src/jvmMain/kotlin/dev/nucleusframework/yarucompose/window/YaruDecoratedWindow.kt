@@ -73,6 +73,11 @@ fun NucleusApplicationScope.YaruDecoratedWindow(
     focusable: Boolean = true,
     alwaysOnTop: Boolean = false,
     hiddenFromDock: Boolean = false,
+    // Materialise Compose `Popup` layers as native transparent windows instead
+    // of drawing them inline. Yaru's own popups (`YaruPopupMenuButton`,
+    // tooltips, the autocomplete list) are clipped to the window bounds
+    // otherwise — turn this on for menus that must escape the window.
+    nativePopupLayers: Boolean = false,
     minimumSize: DpSize? = null,
     onPreviewKeyEvent: (KeyEvent) -> Boolean = { false },
     onKeyEvent: (KeyEvent) -> Boolean = { false },
@@ -109,6 +114,7 @@ fun NucleusApplicationScope.YaruDecoratedWindow(
             focusable = focusable,
             alwaysOnTop = alwaysOnTop,
             hiddenFromDock = hiddenFromDock,
+            nativePopupLayers = nativePopupLayers,
             minimumSize = minimumSize,
             onPreviewKeyEvent = onPreviewKeyEvent,
             onKeyEvent = onKeyEvent,
