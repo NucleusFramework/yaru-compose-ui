@@ -18,10 +18,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import dev.nucleusframework.yarucompose.foundation.YaruPageController
 import dev.nucleusframework.yarucompose.icons.YaruIcon
 import dev.nucleusframework.yarucompose.icons.YaruIcons
 import dev.nucleusframework.yarucompose.themes.LocalYaruColorScheme
@@ -75,9 +76,11 @@ import sample.app.pages.DraggablePage
 import sample.app.pages.ExpandablePage
 import sample.app.pages.ExpansionPanelPage
 import sample.app.pages.FullColorIconsPage
+import sample.app.pages.HomePage
 import sample.app.pages.IconButtonPage
 import sample.app.pages.IconsPage
 import sample.app.pages.InfoPage
+import sample.app.pages.LicensePage
 import sample.app.pages.ListTilePage
 import sample.app.pages.NavigationPage
 import sample.app.pages.OptionButtonPage
@@ -113,12 +116,37 @@ private data class SamplePage(
 )
 
 /**
- * Page list mirrors `examplePageItems` in `example_page_items.dart` (lines
- * 63-397). Dart sorts the list with `.sortedBy((p) => p.title)`, so the
+ * Landing + reference entries, mirroring the `GENERAL` group of the
+ * compose-macos-26-ui sample: they lead the master list and the widget pages
+ * follow alphabetically.
+ */
+private val OverviewPages: List<SamplePage> = listOf(
+    SamplePage(
+        title = "Home",
+        iconGlyph = YaruIcons.home,
+        selectedIconGlyph = YaruIcons.home_filled,
+        titleContent = { YaruText("YaruCompose") },
+    ) {
+        val navigate = LocalSampleNavigator.current
+        HomePage(
+            widgetCount = WidgetPages.size,
+            onExploreWidgets = { navigate(FirstWidgetPageIndex) },
+        )
+    },
+    SamplePage(
+        title = "License",
+        iconGlyph = YaruIcons.document,
+        selectedIconGlyph = YaruIcons.document_filled,
+    ) { LicensePage() },
+)
+
+/**
+ * Widget page list mirrors `examplePageItems` in `example_page_items.dart`
+ * (lines 63-397). Dart sorts the list with `.sortedBy((p) => p.title)`, so the
  * order below is alphabetical by `title`. Icons match the Dart `iconBuilder`
  * mappings line by line.
  */
-private val SamplePages: List<SamplePage> = listOf(
+private val WidgetPages: List<SamplePage> = listOf(
     // example_page_items.dart:64-72.
     SamplePage(
         title = "YaruAutocomplete",
@@ -303,6 +331,14 @@ private val SamplePages: List<SamplePage> = listOf(
     ) { TilePage() },
 ).sortedBy { it.title }
 
+private val SamplePages: List<SamplePage> = OverviewPages + WidgetPages
+
+/** Index of the first widget page — [OverviewPages] leads the master list. */
+private val FirstWidgetPageIndex: Int = OverviewPages.size
+
+/** Lets the home page hand the selection over to a widget page. */
+private val LocalSampleNavigator = staticCompositionLocalOf<(Int) -> Unit> { {} }
+
 /**
  * Three-state theme mode mirrors Dart's `ThemeMode` (system / light / dark)
  * cycled by `ExampleDarkLightToggleButton` (example_dark_light_toggle_button.dart
@@ -385,78 +421,108 @@ fun App() {
 @Composable
 private fun ExampleHome(settings: ExampleSettings) {
     var settingsOpen by remember { mutableStateOf(false) }
+    // A single controller owns the selection for both shells, so toggling
+    // compact mode keeps the page you were on — and the home page can push a
+    // selection through `LocalSampleNavigator`.
+    val controller = remember { YaruPageController(length = SamplePages.size) }
+    val navigate = remember(controller) { { index: Int -> controller.index = index } }
+
+    CompositionLocalProvider(LocalSampleNavigator provides navigate) {
+        if (settings.compactMode.value) {
+            CompactShell(controller = controller, onOpenSettings = { settingsOpen = true })
+        } else {
+            MasterDetailShell(
+                settings = settings,
+                controller = controller,
+                onOpenSettings = { settingsOpen = true },
+            )
+        }
+    }
+
+    if (settingsOpen) {
+        SettingsDialog(
+            settings = settings,
+            onDismiss = { settingsOpen = false },
+        )
+    }
+}
+
+/**
+ * Compact layout — mirrors Dart's `_CompactPage` (example.dart:93-160): a top
+ * `YaruWindowTitleBar` over a `YaruNavigationPage` whose rail style adapts to
+ * the available width (compact / labelled / labelledExtended).
+ */
+@Composable
+private fun CompactShell(
+    controller: YaruPageController,
+    onOpenSettings: () -> Unit,
+) {
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val railStyle = when {
+            maxWidth > 1000.dp -> YaruNavigationRailStyle.LabelledExtended
+            maxWidth > 500.dp -> YaruNavigationRailStyle.Labelled
+            else -> YaruNavigationRailStyle.Compact
+        }
+        // The controller starts unselected (`-1`); the rail coerces the same way.
+        val activeItem = SamplePages[controller.index.coerceIn(0, SamplePages.size - 1)]
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Mirrors Dart `Scaffold.appBar: YaruWindowTitleBar` (example.dart:120-131).
+            YaruTitleBar(
+                title = { (activeItem.titleContent ?: { YaruText(activeItem.title) })() },
+                actions = activeItem.actionsContent,
+                style = YaruTitleBarStyle.Normal,
+            )
+            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                YaruNavigationPage(
+                    length = SamplePages.size,
+                    controller = controller,
+                    itemBuilder = { index, selected, onTap ->
+                        val item = SamplePages[index]
+                        YaruNavigationRailItem(
+                            icon = { YaruIcon(if (selected) item.selectedIconGlyph else item.iconGlyph) },
+                            label = { YaruText(item.title) },
+                            selected = selected,
+                            onTap = onTap,
+                            style = railStyle,
+                        )
+                    },
+                    pageBuilder = { index ->
+                        val item = SamplePages[index]
+                        YaruDetailPage(
+                            floatingActionButton = item.floatingActionButtonContent,
+                            body = { item.content() },
+                        )
+                    },
+                    trailing = {
+                        YaruNavigationRailItem(
+                            icon = { YaruIcon(YaruIcons.gear) },
+                            label = { YaruText("Settings") },
+                            selected = false,
+                            onTap = onOpenSettings,
+                            style = railStyle,
+                        )
+                    },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MasterDetailShell(
+    settings: ExampleSettings,
+    controller: YaruPageController,
+    onOpenSettings: () -> Unit,
+) {
     val scheme = LocalYaruColorScheme.current
     // Mirrors `YaruMasterDetailThemeData.fallback.sideBarColor`.
     val sideBarColor = remember(scheme) {
         scheme.surface.scale(lightness = if (scheme.isLight) -0.029f else 0.029f)
     }
 
-    if (settings.compactMode.value) {
-        // Compact layout — mirrors Dart's `_CompactPage` (example.dart:93-160):
-        // a top `YaruWindowTitleBar` over a `YaruNavigationPage` whose rail style
-        // adapts to the available width (compact / labelled / labelledExtended).
-        var compactSelectedIndex by remember { mutableIntStateOf(1.coerceAtMost(SamplePages.size - 1).coerceAtLeast(0)) }
-        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-            val railStyle = when {
-                maxWidth > 1000.dp -> YaruNavigationRailStyle.LabelledExtended
-                maxWidth > 500.dp -> YaruNavigationRailStyle.Labelled
-                else -> YaruNavigationRailStyle.Compact
-            }
-            val activeItem = SamplePages.getOrNull(compactSelectedIndex.coerceIn(0, SamplePages.size - 1))
-            Column(modifier = Modifier.fillMaxSize()) {
-                // Mirrors Dart `Scaffold.appBar: YaruWindowTitleBar` (example.dart:120-131).
-                YaruTitleBar(
-                    title = { (activeItem?.titleContent ?: { YaruText(activeItem?.title ?: "Yaru") })() },
-                    actions = activeItem?.actionsContent,
-                    style = YaruTitleBarStyle.Normal,
-                )
-                Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                    YaruNavigationPage(
-                        length = SamplePages.size,
-                        // Dart `initialIndex: 1` (example.dart:134).
-                        initialIndex = 1.coerceAtMost(SamplePages.size - 1).coerceAtLeast(0),
-                        onSelected = { compactSelectedIndex = it },
-                        itemBuilder = { index, selected, onTap ->
-                            val item = SamplePages[index]
-                            YaruNavigationRailItem(
-                                icon = { YaruIcon(if (selected) item.selectedIconGlyph else item.iconGlyph) },
-                                label = { YaruText(item.title) },
-                                selected = selected,
-                                onTap = onTap,
-                                style = railStyle,
-                            )
-                        },
-                        pageBuilder = { index ->
-                            val item = SamplePages[index]
-                            YaruDetailPage(
-                                floatingActionButton = item.floatingActionButtonContent,
-                                body = { item.content() },
-                            )
-                        },
-                        trailing = {
-                            YaruNavigationRailItem(
-                                icon = { YaruIcon(YaruIcons.gear) },
-                                label = { YaruText("Settings") },
-                                selected = false,
-                                onTap = { settingsOpen = true },
-                                style = railStyle,
-                            )
-                        },
-                    )
-                }
-            }
-        }
-        if (settingsOpen) {
-            SettingsDialog(
-                settings = settings,
-                onDismiss = { settingsOpen = false },
-            )
-        }
-        return
-    }
-
     YaruMasterDetailPage(
         length = SamplePages.size,
+        controller = controller,
         // example.dart:41-45 — `YaruResizablePaneDelegate(initialPaneSize: 280,
         // minPageSize: kYaruMasterDetailBreakpoint / 2 (= 310), minPaneSize: 175)`.
         paneLayoutDelegate = YaruResizablePaneDelegate(
@@ -481,12 +547,9 @@ private fun ExampleHome(settings: ExampleSettings) {
                     YaruIcon(if (selected) item.selectedIconGlyph else item.iconGlyph)
                 },
                 title = { YaruText(item.title) },
-                // example.dart:50 — first tile gets a `Subtitle` placeholder.
-                subtitle = if (index == 0) {
-                    { YaruText("Subtitle") }
-                } else {
-                    null
-                },
+                // Dart gives the first tile a `Subtitle` placeholder
+                // (example.dart:50); here the list opens on the home entry, so
+                // the placeholder is dropped.
                 selected = selected,
                 onTap = onTap,
             )
@@ -516,18 +579,11 @@ private fun ExampleHome(settings: ExampleSettings) {
                     leading = { YaruIcon(YaruIcons.gear) },
                     title = { YaruText("Settings") },
                     selected = false,
-                    onTap = { settingsOpen = true },
+                    onTap = onOpenSettings,
                 )
             }
         },
     )
-
-    if (settingsOpen) {
-        SettingsDialog(
-            settings = settings,
-            onDismiss = { settingsOpen = false },
-        )
-    }
 }
 
 /**

@@ -74,8 +74,10 @@ mavenPublishing {
 
     pom {
         name = "YaruCompose"
-        description = "Kotlin Multiplatform library"
-        url = "github url" //todo
+        description = "A Compose Multiplatform port of Ubuntu's Yaru design system — 30+ widgets, " +
+            "accent variants, light/dark, high contrast and RTL support."
+        inceptionYear = "2025"
+        url = "https://github.com/kdroidFilter/YaruCompose"
 
         licenses {
             license {
@@ -86,14 +88,14 @@ mavenPublishing {
 
         developers {
             developer {
-                id = "" //todo github nickname
-                name = "" //todo full name
-                email = "" //todo email
+                id = "kdroidfilter"
+                name = "Elie Gambache"
+                email = "elyahou.hadass@gmail.com"
             }
         }
 
         scm {
-            url = "github url" //todo
+            url = "https://github.com/kdroidFilter/YaruCompose"
         }
     }
     if (project.hasProperty("signing.keyId")) signAllPublications()

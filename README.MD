@@ -65,3 +65,11 @@ collisions.
    mavenCentralPassword=[generated password]
    ```
 5) Run `./gradlew :yaru:publishAndReleaseToMavenCentral --no-configuration-cache`
+
+## License
+
+YaruCompose is available under the [MIT License](LICENSE).
+
+The bundled Yaru icon artwork and the Ubuntu font family keep their own
+licenses — see [LICENSE](LICENSE) and
+[`yaru-icons-extended/NOTICE.md`](yaru-icons-extended/NOTICE.md).

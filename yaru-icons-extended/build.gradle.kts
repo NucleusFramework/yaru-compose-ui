@@ -51,7 +51,8 @@ mavenPublishing {
     pom {
         name = "YaruCompose Icons Extended"
         description = "Bundled Yaru full-colour icon theme as Compose ImageVector for Kotlin Multiplatform — no network access required."
-        url = "github url" //todo
+        inceptionYear = "2025"
+        url = "https://github.com/kdroidFilter/YaruCompose"
 
         licenses {
             license {
@@ -62,14 +63,14 @@ mavenPublishing {
 
         developers {
             developer {
-                id = "" //todo github nickname
-                name = "" //todo full name
-                email = "" //todo email
+                id = "kdroidfilter"
+                name = "Elie Gambache"
+                email = "elyahou.hadass@gmail.com"
             }
         }
 
         scm {
-            url = "github url" //todo
+            url = "https://github.com/kdroidFilter/YaruCompose"
         }
     }
     if (project.hasProperty("signing.keyId")) signAllPublications()
