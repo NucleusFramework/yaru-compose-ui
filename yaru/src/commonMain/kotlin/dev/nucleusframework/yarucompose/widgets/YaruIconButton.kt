@@ -27,6 +27,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import dev.nucleusframework.yarucompose.foundation.YaruBaseSizeAdjustment
 import dev.nucleusframework.yarucompose.settings.LocalYaruTheme
 import dev.nucleusframework.yarucompose.themes.LocalYaruColorScheme
 import dev.nucleusframework.yarucompose.themes.LocalYaruContentColor
@@ -74,7 +75,12 @@ fun YaruIconButton(
     // (button_style_button.dart:482), so `Size(20, 20)` becomes `Size(40, 40)` —
     // a 40 dp circular state-layer wraps a 20 dp icon. Without this, the
     // overlay is the icon's exact size and hover/press is barely visible.
-    minimumSize: Dp = 40.dp,
+    //
+    // `effectiveConstraints` first shifts that minimum by the platform's
+    // `VisualDensity`, so the desktop floor is 32 dp — which is why a
+    // `YaruExpandable` chevron (`iconSize: 36`) keeps its 36 dp state layer
+    // instead of being rounded up to 40 dp.
+    minimumSize: Dp = (40.dp + YaruBaseSizeAdjustment).coerceAtLeast(0.dp),
     isSelected: Boolean? = null,
     shape: Shape = CircleShape,
     // Suppress: API parity stub — see kdoc; will be wired once a foundation-only tooltip primitive lands. Removing the param would break source compatibility with yaru.dart.
@@ -105,7 +111,7 @@ fun YaruIconButton(
     val safeMinimumSize = if (minimumSize.value.isFinite()) {
         minimumSize.coerceAtLeast(0.dp)
     } else {
-        40.dp
+        (40.dp + YaruBaseSizeAdjustment).coerceAtLeast(0.dp)
     }
     val buttonSize = if (safeIconSize > safeMinimumSize) safeIconSize else safeMinimumSize
 

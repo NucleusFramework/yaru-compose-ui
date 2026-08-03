@@ -28,13 +28,16 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.toggleableState
 import androidx.compose.ui.state.ToggleableState
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.nucleusframework.yarucompose.foundation.coerceNonNegative
 import dev.nucleusframework.yarucompose.foundation.sanitise
 import dev.nucleusframework.yarucompose.settings.LocalYaruTheme
+import dev.nucleusframework.yarucompose.themes.LocalYaruColorScheme
 import dev.nucleusframework.yarucompose.themes.LocalYaruTextStyle
 import dev.nucleusframework.yarucompose.themes.LocalYaruTypography
+import dev.nucleusframework.yarucompose.themes.YaruColorScheme
 import dev.nucleusframework.yarucompose.themes.YaruConstants
 
 /**
@@ -140,14 +143,15 @@ fun YaruListTile(
                 horizontalAlignment = if (centerTitle) Alignment.CenterHorizontally else Alignment.Start,
             ) {
                 val typography = LocalYaruTypography.current
+                val scheme = LocalYaruColorScheme.current
                 CompositionLocalProvider(
-                    LocalYaruTextStyle provides textStyle(typography.labelLarge, enabled),
+                    LocalYaruTextStyle provides disabledTextStyle(typography.labelLarge, enabled, scheme),
                 ) {
                     title()
                 }
                 if (subtitle != null) {
                     CompositionLocalProvider(
-                        LocalYaruTextStyle provides textStyle(typography.labelMedium, enabled),
+                        LocalYaruTextStyle provides disabledTextStyle(typography.labelMedium, enabled, scheme),
                     ) {
                         subtitle()
                     }
@@ -229,9 +233,18 @@ fun YaruListTileSquare(
     )
 }
 
-private fun textStyle(
-    base: androidx.compose.ui.text.TextStyle,
+/**
+ * Mirrors `color: enabled ? null : theme.disabledColor` from
+ * yaru_list_tile.dart:130/137. `disabledColor` is `onSurface @ 0.38` — the
+ * scale colour has to be resolved from the scheme, not from [base]: the Yaru
+ * type ladder ships `Color.Unspecified` so the widgets can inherit
+ * `LocalYaruContentColor`, and `Color.Unspecified.copy(alpha = ...)` yields a
+ * colour in an unspecified colour space rather than a faded label.
+ */
+private fun disabledTextStyle(
+    base: TextStyle,
     enabled: Boolean,
-): androidx.compose.ui.text.TextStyle =
-    if (enabled) base else base.copy(color = base.color.copy(alpha = 0.38f))
+    scheme: YaruColorScheme,
+): TextStyle =
+    if (enabled) base else base.copy(color = scheme.onSurface.copy(alpha = 0.38f))
 

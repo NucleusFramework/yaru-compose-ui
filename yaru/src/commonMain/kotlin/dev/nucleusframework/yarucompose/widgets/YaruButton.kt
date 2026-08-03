@@ -28,7 +28,8 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import dev.nucleusframework.yarucompose.foundation.coerceNonNegative
+import dev.nucleusframework.yarucompose.foundation.YaruBaseSizeAdjustment
+import dev.nucleusframework.yarucompose.foundation.offsetBy
 import dev.nucleusframework.yarucompose.foundation.sanitiseColor
 import dev.nucleusframework.yarucompose.foundation.sanitiseStrokeWidth
 import dev.nucleusframework.yarucompose.themes.LocalYaruColorScheme
@@ -52,8 +53,10 @@ enum class YaruButtonVariant { Filled, Tonal, Outlined, Text, Elevated }
  * Geometry: minimum size = `kYaruButtonHeight × kYaruButtonHeight` (34dp),
  * shape = `RoundedRectangleBorder(borderRadius: kYaruButtonRadius)` (8dp),
  * content padding = `EdgeInsets.all(16)` from `_createCommonButtonStyle` —
- * applied to all four sides. The 34dp `minimumSize` only kicks in when the
- * combined content + padding is smaller than 34dp on either axis.
+ * applied to all four sides. Both are then shifted by the platform's
+ * `VisualDensity` exactly as `ButtonStyleButton` does, so a desktop button
+ * ends up with 8dp padding and a 26dp minimum box — see
+ * [dev.nucleusframework.yarucompose.foundation.YaruBaseSizeAdjustment].
  *
  * State overlays mirror Flutter's per-variant `overlayColor` defaults
  * (`_FilledButtonDefaultsM3`, `_OutlinedButtonDefaultsM3`,
@@ -86,7 +89,17 @@ fun YaruButton(
     // Dp (NaN / +-Infinity) blows up `roundToPx()`. NaN bypasses
     // `coerceAtLeast` (NaN comparisons all return false), so reject non-finite
     // values via `isFinite()`. Mirrors the YaruListTile fix.
-    val safeContentPadding = contentPadding.coerceNonNegative(layoutDirection)
+    //
+    // The `VisualDensity` adjustment is folded in first, mirroring
+    // `ButtonStyleButton.build`:
+    //   `padding = resolvedPadding.add(EdgeInsets.symmetric(...densityAdjustment))
+    //              .clamp(EdgeInsets.zero, EdgeInsetsGeometry.infinity)`
+    // On the desktop that turns Yaru's `EdgeInsets.all(16)` into 8dp per edge,
+    // which is what makes a Yaru button 34dp tall instead of ~50dp.
+    val safeContentPadding = contentPadding.offsetBy(YaruBaseSizeAdjustment, layoutDirection)
+    // `visualDensity.effectiveConstraints` shifts the minimum box the same way:
+    // `Size(kYaruButtonHeight, kYaruButtonHeight)` -> 26dp on the desktop.
+    val minSize = (YaruConstants.ButtonHeight + YaruBaseSizeAdjustment).coerceAtLeast(0.dp)
 
     // Base background per variant — see `_create*ButtonTheme` in common_themes.dart.
     // Defensive: caller-supplied colors with non-finite channels (e.g.
@@ -191,8 +204,8 @@ fun YaruButton(
     // `YaruFocusBorder` / `focusBorders`).
     Box(
         modifier = modifier
-            .heightIn(min = YaruConstants.ButtonHeight)
-            .widthIn(min = YaruConstants.ButtonHeight)
+            .heightIn(min = minSize)
+            .widthIn(min = minSize)
             .clip(shape)
             .background(color = resolvedBackground)
             .let {
