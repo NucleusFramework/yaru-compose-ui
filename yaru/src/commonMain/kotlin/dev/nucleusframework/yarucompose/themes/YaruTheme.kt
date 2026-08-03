@@ -56,8 +56,12 @@ fun YaruTheme(
         // doesn't pass an explicit style would fall back to `TextStyle.Default`
         // and render in the platform font instead of Ubuntu.
         LocalYaruTextStyle provides typography.bodyMedium,
-        content = content,
-    )
+    ) {
+        // Restyles the built-in cut / copy / paste menu of every text field
+        // below, so a right-click there matches YaruContextMenu instead of
+        // showing the platform's own popup.
+        YaruTextContextMenuOverride(content)
+    }
 }
 
 private fun resolveYaruScheme(

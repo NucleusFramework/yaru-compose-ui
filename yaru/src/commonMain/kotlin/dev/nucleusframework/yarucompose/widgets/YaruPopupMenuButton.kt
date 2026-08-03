@@ -8,6 +8,7 @@ import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -217,7 +218,7 @@ internal fun YaruPopupMenuSurface(
     radius: Dp = 10.dp,
     // Flutter's `_kMenuVerticalPadding = 8` — Yaru does not override this.
     verticalListPadding: Dp = 8.dp,
-    content: @Composable () -> Unit,
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     // Clamp caller-supplied dimensions to a finite non-negative range —
     // `RoundedCornerShape`, `Modifier.width`, and `Modifier.padding` throw on
@@ -272,9 +273,8 @@ internal fun YaruPopupMenuSurface(
             .clip(shape)
             .verticalScroll(rememberScrollState())
             .padding(vertical = safeVerticalListPadding),
-    ) {
-        content()
-    }
+        content = content,
+    )
 }
 
 /**
@@ -310,61 +310,7 @@ private fun <T> PopupMenuRow(
     entry: YaruPopupMenuEntry<T>,
     onClick: () -> Unit,
 ) {
-    val scheme = LocalYaruColorScheme.current
-    // shared MutableInteractionSource — drives focus border, hover overlay, ripple
-    val interactionSource = remember { MutableInteractionSource() }
-    val hovered by interactionSource.collectIsHoveredAsState()
-    val pressed by interactionSource.collectIsPressedAsState()
-    // The Dart `PopupMenuItem` wraps its child in a plain `InkWell` (no
-    // `overlayColor` override — see popup_menu.dart `PopupMenuItemState.build`).
-    // InkWell falls back to `ThemeData.hoverColor` / `highlightColor`, whose
-    // Dart defaults are `black/white @ 0.04` (hover) and `0.1` (press). Yaru's
-    // `splashFactory: NoSplash` also kills the ripple, so the only feedback
-    // is the static overlay — the press value is the highlight color, NOT
-    // the splash color.
-    val background = when {
-        !entry.enabled -> Color.Transparent
-        pressed -> scheme.onSurface.copy(alpha = 0.1f)
-        hovered -> scheme.onSurface.copy(alpha = 0.04f)
-        else -> Color.Transparent
-    }
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            // Flutter's `kMinInteractiveDimension = 48` — Yaru does not override
-            // `popupMenuTheme.menuPadding` or set a global `visualDensity`.
-            .heightIn(min = 48.dp)
-            .let {
-                if (entry.enabled) {
-                    it
-                        // Mirrors Dart `MouseRegion(cursor: mouseCursor)` in
-                        // yaru_popup_menu_button.dart:87-88, where the cursor
-                        // resolves to `SystemMouseCursors.click` via
-                        // `WidgetStateMouseCursor.clickable` for enabled rows.
-                        .pointerHoverIcon(PointerIcon.Hand)
-                        .clickable(
-                            interactionSource = interactionSource,
-                            indication = null,
-                            role = Role.Button,
-                            onClick = onClick,
-                        )
-                } else {
-                    it
-                }
-            }
-            // Background under the click target so the hover/press overlay
-            // spans the entire row width, not just the label.
-            .background(background)
-            // Dart `_PopupMenuDefaultsM3.menuItemPadding =
-            // EdgeInsets.symmetric(horizontal: 12)` (the older default was 16).
-            // Yaru opts into the newer defaults and does not override
-            // `popupMenuTheme.menuPadding`.
-            .padding(horizontal = 12.dp)
-            // Dart `Theme.disabledColor` is onSurface @ 0.38; the Dart
-            // `Opacity(0.38)` wrapper is reproduced here for parity.
-            .alpha(if (entry.enabled) 1f else 0.38f),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
+    YaruMenuItemRow(enabled = entry.enabled, onClick = onClick) {
         if (entry.checked != null) {
             // YaruCheckedPopupMenuItem wraps the row in
             // `Padding(EdgeInsets.symmetric(horizontal: 4))` then a
@@ -378,19 +324,83 @@ private fun <T> PopupMenuRow(
             )
             // from yaru_check_button.dart: ListTile.contentPadding default
             // (the title sits 8dp after the leading widget).
-            Spacer(Modifier.width(8.dp))
+            Spacer(Modifier.width(YaruMenuSlotGap))
         }
+        entry.label()
+    }
+}
+
+/** Gap between a menu row's leading / trailing slot and its label. */
+internal val YaruMenuSlotGap: Dp = 8.dp
+
+/**
+ * One row of a Yaru menu surface — the single source of truth shared by
+ * [YaruPopupMenuButton] and [YaruContextMenu], so both read as the same widget.
+ *
+ * Geometry and states mirror Dart's `PopupMenuItem` under the Yaru theme:
+ *  - `kMinInteractiveDimension = 48` tall; Yaru overrides neither
+ *    `popupMenuTheme.menuPadding` nor the global `visualDensity`.
+ *  - `_PopupMenuDefaultsM3.menuItemPadding = EdgeInsets.symmetric(horizontal: 12)`.
+ *  - the item is a plain `InkWell` with no `overlayColor` override, so it falls
+ *    back to `ThemeData.hoverColor` / `highlightColor` — `black/white @ 0.04`
+ *    and `@ 0.1`. `splashFactory: NoSplash` kills the ripple, leaving the
+ *    static overlay as the only feedback.
+ *  - disabled rows are wrapped in Dart's `Opacity(0.38)` (`Theme.disabledColor`).
+ *  - `_PopupMenuDefaultsM3.labelTextStyle` resolves to `textTheme.labelLarge`.
+ */
+@Composable
+internal fun YaruMenuItemRow(
+    enabled: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    role: Role = Role.Button,
+    content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit,
+) {
+    val scheme = LocalYaruColorScheme.current
+    // shared MutableInteractionSource — drives focus border, hover overlay, ripple
+    val interactionSource = remember { MutableInteractionSource() }
+    val hovered by interactionSource.collectIsHoveredAsState()
+    val pressed by interactionSource.collectIsPressedAsState()
+    val background = when {
+        !enabled -> Color.Transparent
+        pressed -> scheme.onSurface.copy(alpha = 0.1f)
+        hovered -> scheme.onSurface.copy(alpha = 0.04f)
+        else -> Color.Transparent
+    }
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(min = 48.dp)
+            .let {
+                if (enabled) {
+                    it
+                        // Mirrors Dart `MouseRegion(cursor: mouseCursor)` in
+                        // yaru_popup_menu_button.dart:87-88, where the cursor
+                        // resolves to `SystemMouseCursors.click` via
+                        // `WidgetStateMouseCursor.clickable` for enabled rows.
+                        .pointerHoverIcon(PointerIcon.Hand)
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null,
+                            role = role,
+                            onClick = onClick,
+                        )
+                } else {
+                    it
+                }
+            }
+            // Background under the click target so the hover/press overlay
+            // spans the entire row width, not just the label.
+            .background(background)
+            .padding(horizontal = 12.dp)
+            .alpha(if (enabled) 1f else 0.38f),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         CompositionLocalProvider(
             LocalYaruContentColor provides scheme.onSurface,
-            // Dart `_PopupMenuDefaultsM3.labelTextStyle` returns
-            // `_textTheme.labelLarge` (yaru: 14.66sp Normal). The earlier
-            // `bodyMedium` matched only because both are 14.66sp Normal in
-            // Yaru's typography, but `labelLarge` is the spec-correct ladder
-            // entry for popup-menu items.
             LocalYaruTextStyle provides LocalYaruTypography.current.labelLarge,
-        ) {
-            entry.label()
-        }
+            content = { content() },
+        )
     }
 }
 
