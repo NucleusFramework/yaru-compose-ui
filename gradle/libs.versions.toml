@@ -1,16 +1,16 @@
 [versions]
 
-kotlin = "2.3.20"
+kotlin = "2.4.10"
 nucleus = "dev"
-agp = "8.12.3"
-maven-publish = "0.34.0"
-compose-multiplatform = "1.11.0"
-kotlinx-coroutines = "1.10.2"
-kotlinx-datetime = "0.7.1"
-androidx-activityCompose = "1.12.0"
-ktor = "3.4.3"
-coil = "3.5.0-beta01"
-ksp = "2.3.1"
+agp = "8.13.2"
+maven-publish = "0.37.0"
+compose-multiplatform = "1.11.1"
+kotlinx-coroutines = "1.11.0"
+kotlinx-datetime = "0.8.0"
+androidx-activityCompose = "1.13.0"
+ktor = "3.5.2"
+coil = "3.5.0"
+ksp = "2.3.10"
 highlights = "1.1.0"
 
 [libraries]
