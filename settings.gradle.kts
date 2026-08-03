@@ -33,6 +33,7 @@ dependencyResolutionManagement {
     }
 }
 include(":yaru")
+include(":yaru-decorated-window")
 include(":yaru-icons-extended")
 include(":sample:galleryKsp")
 include(":sample:sharedUI")

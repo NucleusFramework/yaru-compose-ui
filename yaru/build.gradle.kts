@@ -42,10 +42,11 @@ kotlin {
 
         jvmMain.dependencies {
             implementation(libs.kotlinx.coroutines.swing)
-            // Windowing layer: the Yaru widgets stay design-only, the window
-            // integration (drag, controls, theme sync) lives in jvmMain.
-            api(libs.nucleus.decorated.window.tao)
-            api(libs.nucleus.application)
+            // No windowing layer here on purpose: the widgets stay design-only
+            // and talk to a window through the CompositionLocals in
+            // `window/WindowIntegration.kt`. The Nucleus-backed implementation
+            // — and its native binaries — lives in :yaru-decorated-window, so
+            // an app drawing into a plain Compose `Window` never pulls it.
             // System theme: OS dark mode and accent color, read natively.
             implementation(libs.nucleus.darkmode.detector)
             implementation(libs.nucleus.system.color)

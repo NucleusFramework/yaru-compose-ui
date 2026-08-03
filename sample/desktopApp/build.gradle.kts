@@ -15,9 +15,9 @@ kotlin {
 
 dependencies {
     implementation(project(":sample:sharedUI"))
-    // Direct: the window entry point lives in :yaru's jvmMain, and sharedUI
-    // depends on it privately.
-    implementation(project(":yaru"))
+    // Direct: the window entry point lives here, and sharedUI depends on
+    // :yaru privately. Brings :yaru along transitively.
+    implementation(project(":yaru-decorated-window"))
     implementation(compose.desktop.currentOs)
     // L1 GraalVM metadata, font substitutions and the META-INF/services globs
     // the native image needs.

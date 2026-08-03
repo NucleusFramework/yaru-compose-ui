@@ -2,6 +2,30 @@
 
 Kotlin Multiplatform Library
 
+### Modules
+
+| Module | Targets | Purpose |
+| --- | --- | --- |
+| `yaru` | Android, JVM, JS, Wasm, iOS | The design system: widgets, themes, foundation. |
+| `yaru-icons-extended` | Android, JVM, JS, Wasm, iOS | The full-colour Yaru icon theme as `ImageVector`s. |
+| `yaru-decorated-window` | JVM | Client-side decorated desktop window and dialog, backed by Nucleus. |
+
+`yaru` stays design-only: the widgets talk to a windowing layer through the
+optional `CompositionLocal`s in `window/WindowIntegration.kt`, and behave
+normally when nothing provides them. `yaru-decorated-window` is what fulfils
+those contracts — it is a separate artifact because it drags in Nucleus and its
+native windowing binaries (~30 MB of per-platform natives), which an app drawing
+into a plain Compose `Window` has no use for.
+
+```kotlin
+// Design system only — no native windowing.
+implementation("dev.nucleusframework.yarucompose:yaru:1.0.0")
+
+// Desktop app that wants the GNOME-style client-side decorated window.
+// Brings `yaru` along transitively.
+implementation("dev.nucleusframework.yarucompose:yaru-decorated-window:1.0.0")
+```
+
 ### Run Sample App
 
  - Desktop JVM: `./gradlew :sample:composeApp:run`
@@ -40,7 +64,7 @@ collisions.
 
 ### Publish to MavenLocal
 
-1) Run `./gradlew :yaru:publishToMavenLocal`
+1) Run `./gradlew :yaru:publishToMavenLocal :yaru-decorated-window:publishToMavenLocal :yaru-icons-extended:publishToMavenLocal`
 2) Open `~/.m2/repository/dev/nucleusframework/yarucompose/`
 
 ### Publish to MavenCentral
@@ -64,7 +88,7 @@ collisions.
    mavenCentralUsername=[generated username]
    mavenCentralPassword=[generated password]
    ```
-5) Run `./gradlew :yaru:publishAndReleaseToMavenCentral --no-configuration-cache`
+5) Run `./gradlew publishAndReleaseToMavenCentral --no-configuration-cache`
 
 ## License
 
