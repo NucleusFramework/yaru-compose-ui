@@ -38,11 +38,10 @@ dependencies {
 
 nucleus.application {
     mainClass = "MainKt"
-
     nativeDistributions {
         targetFormats(TargetFormat.Dmg, TargetFormat.Nsis, TargetFormat.Deb)
         compressionLevel = CompressionLevel.Ultra
-        packageName = "sample"
+        packageName = "yaru-compose-gallery"
         cleanupNativeLibs = true
         packageVersion = nativePackageVersion
         linux {
