@@ -33,7 +33,7 @@ import androidx.compose.ui.window.PopupProperties
 import dev.nucleusframework.yarucompose.widgets.YaruContextMenuItem
 import dev.nucleusframework.yarucompose.widgets.YaruContextMenuSeparator
 import dev.nucleusframework.yarucompose.widgets.YaruContextMenuShortcut
-import dev.nucleusframework.yarucompose.widgets.YaruPopupMenuSurface
+import dev.nucleusframework.yarucompose.widgets.YaruContextMenuSurface
 import dev.nucleusframework.yarucompose.widgets.YaruText
 import kotlinx.coroutines.channels.Channel
 
@@ -132,8 +132,8 @@ private fun YaruTextContextMenuPopup(
         onDismissRequest = menu.onDismiss,
         properties = PopupProperties(focusable = true),
     ) {
-        // Same panel as YaruPopupMenuButton and YaruContextMenu.
-        YaruPopupMenuSurface(minWidth = 160.dp) {
+        // Same panel and rows as YaruContextMenu.
+        YaruContextMenuSurface(minWidth = 160.dp) {
             for (component in data.components) {
                 if (component is TextContextMenuSeparator) {
                     YaruContextMenuSeparator()

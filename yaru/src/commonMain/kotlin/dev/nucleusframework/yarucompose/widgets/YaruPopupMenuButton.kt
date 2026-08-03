@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import dev.nucleusframework.yarucompose.foundation.YaruBaseSizeAdjustment
 import dev.nucleusframework.yarucompose.foundation.coerceNonNegative
 import dev.nucleusframework.yarucompose.foundation.sanitise
 import dev.nucleusframework.yarucompose.icons.YaruIcon
@@ -218,6 +219,10 @@ internal fun YaruPopupMenuSurface(
     radius: Dp = 10.dp,
     // Flutter's `_kMenuVerticalPadding = 8` — Yaru does not override this.
     verticalListPadding: Dp = 8.dp,
+    // Flutter's popup menu has none; GNOME's popover menu pads all four edges,
+    // which is what insets its row highlights and separators — see
+    // [YaruContextMenuSurface].
+    horizontalListPadding: Dp = 0.dp,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     // Clamp caller-supplied dimensions to a finite non-negative range —
@@ -229,6 +234,7 @@ internal fun YaruPopupMenuSurface(
     val safeFixedWidth = fixedWidth?.let { if (it.value.isFinite()) it.coerceAtLeast(0.dp) else null }
     val safeRadius = radius.sanitise()
     val safeVerticalListPadding = verticalListPadding.sanitise()
+    val safeHorizontalListPadding = horizontalListPadding.sanitise()
     val shape = RoundedCornerShape(safeRadius)
     Column(
         modifier = Modifier
@@ -272,7 +278,10 @@ internal fun YaruPopupMenuSurface(
             // YaruAutocomplete (`clipContent = true`).
             .clip(shape)
             .verticalScroll(rememberScrollState())
-            .padding(vertical = safeVerticalListPadding),
+            .padding(
+                vertical = safeVerticalListPadding,
+                horizontal = safeHorizontalListPadding,
+            ),
         content = content,
     )
 }
@@ -334,19 +343,63 @@ private fun <T> PopupMenuRow(
 internal val YaruMenuSlotGap: Dp = 8.dp
 
 /**
+ * Geometry of one [YaruMenuItemRow]. The two menu families deliberately differ:
+ * a dropdown is Flutter's `PopupMenuItem`, a context menu is GNOME's popover
+ * menu (see [YaruContextMenu]).
+ */
+internal data class YaruMenuRowStyle(
+    val minHeight: Dp,
+    val horizontalPadding: Dp,
+    /** Corner radius of the hover / press overlay. */
+    val highlightRadius: Dp,
+    val disabledAlpha: Float,
+) {
+    companion object {
+        /**
+         * Dart `PopupMenuItem` under the Yaru theme:
+         *  - `kMinInteractiveDimension = 48` tall; Yaru overrides neither
+         *    `popupMenuTheme.menuPadding` nor the global `visualDensity`.
+         *  - `_PopupMenuDefaultsM3.menuItemPadding = EdgeInsets.symmetric(horizontal: 12)`.
+         *  - the overlay is a full-bleed rectangle, clipped by the surface.
+         *  - disabled rows are wrapped in `Opacity(0.38)` (`Theme.disabledColor`).
+         */
+        val PopupMenu = YaruMenuRowStyle(
+            minHeight = 48.dp,
+            horizontalPadding = 12.dp,
+            highlightRadius = 0.dp,
+            disabledAlpha = 0.38f,
+        )
+
+        /**
+         * GNOME's `popover.menu modelbutton`: 32 px tall on the Ubuntu desktop,
+         * 12 px of padding inside a 6 px-radius highlight, and `:disabled`
+         * rendered at GTK's insensitive 50%.
+         *
+         * The height is expressed against [YaruBaseSizeAdjustment] rather than
+         * hardcoded so touch targets stay usable where a right-click is a long
+         * press: 32 dp on desktop and web, 40 dp on Android / iOS.
+         */
+        val ContextMenu: YaruMenuRowStyle
+            get() = YaruMenuRowStyle(
+                minHeight = 40.dp + YaruBaseSizeAdjustment,
+                horizontalPadding = 12.dp,
+                highlightRadius = 6.dp,
+                disabledAlpha = 0.5f,
+            )
+    }
+}
+
+/**
  * One row of a Yaru menu surface — the single source of truth shared by
- * [YaruPopupMenuButton] and [YaruContextMenu], so both read as the same widget.
+ * [YaruPopupMenuButton] and [YaruContextMenu]; [style] is what sets the two
+ * apart.
  *
- * Geometry and states mirror Dart's `PopupMenuItem` under the Yaru theme:
- *  - `kMinInteractiveDimension = 48` tall; Yaru overrides neither
- *    `popupMenuTheme.menuPadding` nor the global `visualDensity`.
- *  - `_PopupMenuDefaultsM3.menuItemPadding = EdgeInsets.symmetric(horizontal: 12)`.
- *  - the item is a plain `InkWell` with no `overlayColor` override, so it falls
- *    back to `ThemeData.hoverColor` / `highlightColor` — `black/white @ 0.04`
- *    and `@ 0.1`. `splashFactory: NoSplash` kills the ripple, leaving the
- *    static overlay as the only feedback.
- *  - disabled rows are wrapped in Dart's `Opacity(0.38)` (`Theme.disabledColor`).
- *  - `_PopupMenuDefaultsM3.labelTextStyle` resolves to `textTheme.labelLarge`.
+ * States mirror Dart's `PopupMenuItem`: the item is a plain `InkWell` with no
+ * `overlayColor` override, so it falls back to `ThemeData.hoverColor` /
+ * `highlightColor` — `black/white @ 0.04` and `@ 0.1`. `splashFactory:
+ * NoSplash` kills the ripple, leaving the static overlay as the only feedback.
+ * `_PopupMenuDefaultsM3.labelTextStyle` resolves to `textTheme.labelLarge`,
+ * which is also GNOME's 11 pt menu label.
  */
 @Composable
 internal fun YaruMenuItemRow(
@@ -354,6 +407,7 @@ internal fun YaruMenuItemRow(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     role: Role = Role.Button,
+    style: YaruMenuRowStyle = YaruMenuRowStyle.PopupMenu,
     content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit,
 ) {
     val scheme = LocalYaruColorScheme.current
@@ -370,7 +424,7 @@ internal fun YaruMenuItemRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 48.dp)
+            .heightIn(min = style.minHeight.sanitise())
             .let {
                 if (enabled) {
                     it
@@ -391,9 +445,9 @@ internal fun YaruMenuItemRow(
             }
             // Background under the click target so the hover/press overlay
             // spans the entire row width, not just the label.
-            .background(background)
-            .padding(horizontal = 12.dp)
-            .alpha(if (enabled) 1f else 0.38f),
+            .background(background, RoundedCornerShape(style.highlightRadius.sanitise()))
+            .padding(horizontal = style.horizontalPadding.sanitise())
+            .alpha(if (enabled) 1f else style.disabledAlpha),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         CompositionLocalProvider(

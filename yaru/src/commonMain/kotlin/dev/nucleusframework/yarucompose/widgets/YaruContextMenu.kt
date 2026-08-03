@@ -44,10 +44,12 @@ internal val LocalYaruContextMenuClose = staticCompositionLocalOf<() -> Unit> { 
  * as a menu at the pointer.
  *
  * yaru.dart has no context-menu widget of its own — GTK apps get theirs from
- * the toolkit — so this is a Compose-side addition. It is *not* a new menu
- * design: the panel is [YaruPopupMenuSurface] and the rows are
- * [YaruMenuItemRow], the same two pieces [YaruPopupMenuButton] is built from,
- * so a context menu and a popup menu are pixel-identical.
+ * the toolkit — so this is a Compose-side addition, and the toolkit is what it
+ * copies: a GNOME `popover.menu`, not Flutter's `PopupMenuButton`. It reuses
+ * [YaruPopupMenuSurface] and [YaruMenuItemRow] for the panel and the rows, but
+ * with GNOME's metrics ([YaruContextMenuSurface],
+ * [YaruMenuRowStyle.ContextMenu]) — 32 dp rows, 6 dp of panel padding insetting
+ * a 6 dp-radius row highlight, and separators inset to match.
  *
  * ```
  * YaruContextMenu(trigger = { YaruText("Right-click me") }) {
@@ -116,7 +118,7 @@ fun YaruContextMenu(
                 properties = PopupProperties(focusable = true),
             ) {
                 CompositionLocalProvider(LocalYaruContextMenuClose provides dismiss) {
-                    YaruPopupMenuSurface(minWidth = minWidth, content = content)
+                    YaruContextMenuSurface(minWidth = minWidth, content = content)
                 }
             }
         }
@@ -157,8 +159,37 @@ private class CursorPositionProvider(private val cursorOffset: IntOffset) : Popu
 }
 
 /**
- * A selectable menu row — a `PopupMenuItem` in everything but its trigger.
- * Selecting it runs [onSelect] and closes the menu.
+ * Padding GNOME puts on every edge of a `popover.menu`. It is what insets the
+ * row highlights and the separators from the panel edge, and — added to
+ * [YaruMenuRowStyle.ContextMenu]'s own 12 dp — what puts the labels 18 dp in.
+ */
+private val ContextMenuEdgePadding: Dp = 6.dp
+
+/**
+ * The panel a context menu is drawn on: [YaruPopupMenuSurface] with GNOME's
+ * metrics rather than Flutter's — a 12 dp radius and [ContextMenuEdgePadding]
+ * on all four edges instead of a 10 dp radius and vertical padding only.
+ *
+ * Shared with [dev.nucleusframework.yarucompose.themes.YaruTextContextMenuOverride]
+ * so a text field's cut / copy / paste menu is the same panel.
+ */
+@Composable
+internal fun YaruContextMenuSurface(
+    minWidth: Dp = 160.dp,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    YaruPopupMenuSurface(
+        minWidth = minWidth,
+        radius = 12.dp,
+        verticalListPadding = ContextMenuEdgePadding,
+        horizontalListPadding = ContextMenuEdgePadding,
+        content = content,
+    )
+}
+
+/**
+ * A selectable menu row — GNOME's `modelbutton`. Selecting it runs [onSelect]
+ * and closes the menu.
  *
  * [leading] and [trailing] are free-form slots: a glyph (see
  * [YaruContextMenuIcon]) and a [YaruContextMenuShortcut] in the usual case.
@@ -176,6 +207,7 @@ fun YaruContextMenuItem(
     YaruMenuItemRow(
         modifier = modifier,
         enabled = enabled,
+        style = YaruMenuRowStyle.ContextMenu,
         onClick = {
             onSelect()
             close()
@@ -211,6 +243,7 @@ fun YaruContextMenuCheckboxItem(
         modifier = modifier,
         enabled = enabled,
         role = Role.Checkbox,
+        style = YaruMenuRowStyle.ContextMenu,
         onClick = { onCheckedChange(!checked) },
     ) {
         YaruCheckbox(checked = checked, onCheckedChange = null, enabled = enabled)
@@ -229,39 +262,46 @@ fun YaruContextMenuLabel(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(32.dp)
-            // Aligned with `_PopupMenuDefaultsM3.menuItemPadding`, so the
-            // caption sits flush with the labels below it.
-            .padding(horizontal = 12.dp),
+            .height(YaruMenuRowStyle.ContextMenu.minHeight)
+            // Same padding as the rows, so the caption sits flush with the
+            // labels below it.
+            .padding(horizontal = YaruMenuRowStyle.ContextMenu.horizontalPadding),
         contentAlignment = Alignment.CenterStart,
     ) {
         YaruText(
             text = text,
             style = LocalYaruTypography.current.labelMedium,
-            color = scheme.onSurface.copy(alpha = 0.7f),
+            color = scheme.onSurface.copy(alpha = ContextMenuDimAlpha),
         )
     }
 }
 
 /**
- * A hairline between two groups of rows — Flutter's `PopupMenuDivider`, a
- * `Divider` inside a 16dp band.
+ * A hairline between two groups of rows. GNOME gives a menu separator 6 px of
+ * margin either side of the 1 px line, and lets the panel's own padding inset
+ * it from the edges.
  */
 @Composable
 fun YaruContextMenuSeparator(modifier: Modifier = Modifier) {
     Box(
-        modifier = modifier.fillMaxWidth().height(16.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .height(ContextMenuEdgePadding * 2 + 1.dp),
         contentAlignment = Alignment.Center,
     ) {
         YaruHorizontalDivider()
     }
 }
 
+/** GTK's `dim-label` — accelerators and captions in a menu. */
+private const val ContextMenuDimAlpha = 0.55f
+
 /**
  * A keyboard-shortcut hint, meant for [YaruContextMenuItem]'s `trailing` slot.
  *
- * Renders GNOME's notation (`Ctrl+Shift+C`) on every target: Yaru is Ubuntu's
- * design system, so its accelerators read the same wherever the app runs.
+ * Renders GNOME's notation on every target: Yaru is Ubuntu's design system, so
+ * its accelerators read the same wherever the app runs. Modifiers come out in
+ * `gtk_accelerator_get_label` order — `Shift+Ctrl+N`, not `Ctrl+Shift+N`.
  */
 @Composable
 fun YaruContextMenuShortcut(
@@ -275,9 +315,9 @@ fun YaruContextMenuShortcut(
     val scheme = LocalYaruColorScheme.current
     val label = remember(key, control, shift, alt, `super`) {
         buildList {
+            if (shift) add("Shift")
             if (control) add("Ctrl")
             if (alt) add("Alt")
-            if (shift) add("Shift")
             if (`super`) add("Super")
             add(key)
         }.joinToString("+")
@@ -285,7 +325,7 @@ fun YaruContextMenuShortcut(
     YaruText(
         text = label,
         modifier = modifier,
-        color = scheme.onSurface.copy(alpha = 0.7f),
+        color = scheme.onSurface.copy(alpha = ContextMenuDimAlpha),
     )
 }
 
