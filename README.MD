@@ -246,41 +246,6 @@ ExampleCard(
 Keep the example self-contained — its body is what the user copies. Function names must be unique across
 the module; the processor fails the build on collisions.
 
-## Publishing
-
-### To MavenLocal
-
-```bash
-./gradlew publishToMavenLocal
-```
-
-The artifacts land in `~/.m2/repository/dev/nucleusframework/yarucompose/`.
-
-### To Maven Central
-
-Releases are tag-driven: pushing a `vX.Y.Z` tag runs
-[`.github/workflows/publish-maven.yaml`](.github/workflows/publish-maven.yaml), which derives the version
-from the tag (`RELEASE_VERSION`) and runs `publishAndReleaseToMavenCentral` on a macOS runner — required
-for the Apple targets. It expects these repository secrets: `MAVENCENTRALUSERNAME`,
-`MAVENCENTRALPASSWORD`, `SIGNINGINMEMORYKEY`, `SIGNINGKEYID`, `SIGNINGPASSWORD`.
-
-The same tag also triggers [`release-gallery.yaml`](.github/workflows/release-gallery.yaml), which builds
-the GraalVM native gallery for Linux, macOS and Windows and attaches it to the GitHub release.
-
-To publish by hand, put the Sonatype credentials and a GPG key in `~/.gradle/gradle.properties`:
-
-```properties
-signing.keyId=XXXXXXXX
-signing.password=[key password]
-signing.secretKeyRingFile=/path/to/XXXXXXXX.gpg
-mavenCentralUsername=[generated username]
-mavenCentralPassword=[generated password]
-```
-
-```bash
-./gradlew publishAndReleaseToMavenCentral --no-configuration-cache
-```
-
 ## License
 
 Yaru Compose UI is available under the [MIT License](LICENSE).
