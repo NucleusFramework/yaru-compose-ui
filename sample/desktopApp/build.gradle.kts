@@ -1,4 +1,5 @@
 import dev.nucleusframework.desktop.application.dsl.CompressionLevel
+import dev.nucleusframework.desktop.application.dsl.NativeImageOptimization
 import dev.nucleusframework.desktop.application.dsl.TargetFormat
 
 plugins {
@@ -7,6 +8,17 @@ plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.nucleus)
 }
+
+// Release builds are tag-driven: the CI exports RELEASE_VERSION=<tag>.
+val releaseVersion =
+    System
+        .getenv("RELEASE_VERSION")
+        ?.removePrefix("v")
+        ?.takeIf { it.isNotBlank() && it.first().isDigit() }
+        ?: "1.0.0"
+
+// Native installers only accept numeric versions: drop any pre-release suffix.
+val nativePackageVersion = releaseVersion.substringBefore("-")
 
 // Defensive: align JVM target with yaru/sharedUI (JVM_17) to avoid bytecode incompatibility when consuming KMP modules built for JVM_17
 kotlin {
@@ -28,11 +40,11 @@ nucleus.application {
     mainClass = "MainKt"
 
     nativeDistributions {
-        targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+        targetFormats(TargetFormat.Dmg, TargetFormat.Nsis, TargetFormat.Deb)
         compressionLevel = CompressionLevel.Ultra
         packageName = "sample"
         cleanupNativeLibs = true
-        packageVersion = "1.0.0"
+        packageVersion = nativePackageVersion
         linux {
             debMaintainer = "Nucleus"
             homepage = "https://nucleusframework.dev"
@@ -43,5 +55,6 @@ nucleus.application {
         isEnabled = true
         javaLanguageVersion = 25
         imageName = "yaru-sample"
+        optimization = NativeImageOptimization.SIZE
     }
 }
