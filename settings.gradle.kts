@@ -33,6 +33,7 @@ dependencyResolutionManagement {
     }
 }
 include(":yaru")
+include(":yaru-icons-extended")
 include(":sample:galleryKsp")
 include(":sample:sharedUI")
 include(":sample:androidApp")

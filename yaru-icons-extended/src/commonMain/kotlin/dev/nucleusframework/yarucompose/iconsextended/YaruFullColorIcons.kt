@@ -1,0 +1,459 @@
+package dev.nucleusframework.yarucompose.iconsextended
+
+import androidx.compose.ui.graphics.vector.ImageVector
+import dev.nucleusframework.yarucompose.iconsextended.vector.*
+
+/**
+ * Identifiers for the bundled Yaru full-colour icon theme, converted from
+ * `ubuntu/yaru`'s own SVG sources (`icons/src/fullcolor`) into Compose
+ * [ImageVector]s — do not hand-edit.
+ *
+ * Names follow the Freedesktop icon-naming convention with `-`/`.`/`+` replaced
+ * by `_` so they are valid Kotlin identifiers (e.g. `application-vnd.ms-word`
+ * becomes [application_vnd_ms_word]).
+ *
+ * Each icon's path data lives in its own top-level file (see the sibling
+ * `vector` package) — referencing one icon here does not retain the others;
+ * unused ones are dead-code-eliminated from the final binary.
+ *
+ * A handful of upstream icons have no usable vector source (either no SVG
+ * exists at all, or the only source file has drifted from the shipped
+ * artwork) and are intentionally omitted: image-viewer-app, org.gnome.Calls,
+ * system-settings, preferences-system-power, user-trash-full.
+ *
+ * Use with [YaruFullColorIcon]. Dual-licensed GPLv3 / CC-BY-SA 4.0 — see
+ * `NOTICE.md` in this module for attribution.
+ */
+@Suppress("ObjectPropertyName", "TopLevelPropertyNaming", "MemberVisibilityCanBePrivate")
+object YaruFullColorIcons {
+    // actions
+    val address_book_new: ImageVector get() = AddressBookNew
+    val appointment_new: ImageVector get() = AppointmentNew
+    val blueman_plugin: ImageVector get() = BluemanPlugin
+    val blueman_trust: ImageVector get() = BluemanTrust
+    val blueman_untrust: ImageVector get() = BluemanUntrust
+    val cancel: ImageVector get() = Cancel
+    val configure: ImageVector get() = Configure
+    val dialog_apply: ImageVector get() = DialogApply
+    val document_new: ImageVector get() = DocumentNew
+    val document_open_recent: ImageVector get() = DocumentOpenRecent
+    val document_open: ImageVector get() = DocumentOpen
+    val document_page_setup: ImageVector get() = DocumentPageSetup
+    val document_print_preview: ImageVector get() = DocumentPrintPreview
+    val document_print: ImageVector get() = DocumentPrint
+    val document_properties: ImageVector get() = DocumentProperties
+    val document_revert: ImageVector get() = DocumentRevert
+    val document_save_as: ImageVector get() = DocumentSaveAs
+    val document_save: ImageVector get() = DocumentSave
+    val document_send: ImageVector get() = DocumentSend
+    val edit_copy: ImageVector get() = EditCopy
+    val edit_cut: ImageVector get() = EditCut
+    val edit_delete: ImageVector get() = EditDelete
+    val edit_find_replace: ImageVector get() = EditFindReplace
+    val edit_find: ImageVector get() = EditFind
+    val edit_paste: ImageVector get() = EditPaste
+    val edit_redo: ImageVector get() = EditRedo
+    val edit_select_all: ImageVector get() = EditSelectAll
+    val edit_undo: ImageVector get() = EditUndo
+    val folder_new: ImageVector get() = FolderNew
+    val format_indent_less: ImageVector get() = FormatIndentLess
+    val format_indent_more: ImageVector get() = FormatIndentMore
+    val format_justify_center: ImageVector get() = FormatJustifyCenter
+    val format_justify_fill: ImageVector get() = FormatJustifyFill
+    val format_justify_left: ImageVector get() = FormatJustifyLeft
+    val format_justify_right: ImageVector get() = FormatJustifyRight
+    val format_text_bold: ImageVector get() = FormatTextBold
+    val format_text_italic: ImageVector get() = FormatTextItalic
+    val format_text_strikethrough: ImageVector get() = FormatTextStrikethrough
+    val format_text_underline: ImageVector get() = FormatTextUnderline
+    val go_first: ImageVector get() = GoFirst
+    val go_last: ImageVector get() = GoLast
+    val help_about: ImageVector get() = HelpAbout
+    val help_contents: ImageVector get() = HelpContents
+    val mail_archive: ImageVector get() = MailArchive
+    val mail_forward: ImageVector get() = MailForward
+    val mail_inbox: ImageVector get() = MailInbox
+    val mail_mark_important: ImageVector get() = MailMarkImportant
+    val mail_mark_junk: ImageVector get() = MailMarkJunk
+    val mail_mark_notjunk: ImageVector get() = MailMarkNotjunk
+    val mail_message_new: ImageVector get() = MailMessageNew
+    val mail_outbox: ImageVector get() = MailOutbox
+    val mail_read: ImageVector get() = MailRead
+    val mail_reply_all: ImageVector get() = MailReplyAll
+    val mail_reply_sender: ImageVector get() = MailReplySender
+    val mail_send_receive: ImageVector get() = MailSendReceive
+    val mail_send: ImageVector get() = MailSend
+    val mail_sent: ImageVector get() = MailSent
+    val mail_unread: ImageVector get() = MailUnread
+    val system_log_out: ImageVector get() = SystemLogOut
+    val system_reboot: ImageVector get() = SystemReboot
+    val system_shutdown: ImageVector get() = SystemShutdown
+    val view_app_grid: ImageVector get() = ViewAppGrid
+    val zoom_in: ImageVector get() = ZoomIn
+    val zoom_out: ImageVector get() = ZoomOut
+
+    // apps
+    val accessories_character_map: ImageVector get() = AccessoriesCharacterMap
+    val accessories_dictionary: ImageVector get() = AccessoriesDictionary
+    val accessories_text_editor: ImageVector get() = AccessoriesTextEditor
+    val address_book_app: ImageVector get() = AddressBookApp
+    val app_center: ImageVector get() = AppCenter
+    val applications_multimedia: ImageVector get() = ApplicationsMultimedia
+    val applications_office: ImageVector get() = ApplicationsOffice
+    val backups_app: ImageVector get() = BackupsApp
+    val bluetooth: ImageVector get() = Bluetooth
+    val calculator_app: ImageVector get() = CalculatorApp
+    val calendar_app: ImageVector get() = CalendarApp
+    val camera_app: ImageVector get() = CameraApp
+    val clock_app: ImageVector get() = ClockApp
+    val configurator_app: ImageVector get() = ConfiguratorApp
+    val disk_usage_app: ImageVector get() = DiskUsageApp
+    val disk_utility_app: ImageVector get() = DiskUtilityApp
+    val documents_app: ImageVector get() = DocumentsApp
+    val docviewer_app: ImageVector get() = DocviewerApp
+    val ebook_reader_app: ImageVector get() = EbookReaderApp
+    val error_app: ImageVector get() = ErrorApp
+    val evince: ImageVector get() = Evince
+    val extensions: ImageVector get() = Extensions
+    val file_roller: ImageVector get() = FileRoller
+    val filemanager_app: ImageVector get() = FilemanagerApp
+    val gallery_app: ImageVector get() = GalleryApp
+    val games_app: ImageVector get() = GamesApp
+    val gnome_aisleriot: ImageVector get() = GnomeAisleriot
+    val gnome_mahjongg: ImageVector get() = GnomeMahjongg
+    val gnome_mines: ImageVector get() = GnomeMines
+    val gparted: ImageVector get() = Gparted
+    val help_app: ImageVector get() = HelpApp
+    val jockey: ImageVector get() = Jockey
+    val libreoffice_base: ImageVector get() = LibreofficeBase
+    val libreoffice_calc: ImageVector get() = LibreofficeCalc
+    val libreoffice_draw: ImageVector get() = LibreofficeDraw
+    val libreoffice_impress: ImageVector get() = LibreofficeImpress
+    val libreoffice_main: ImageVector get() = LibreofficeMain
+    val libreoffice_math: ImageVector get() = LibreofficeMath
+    val libreoffice_writer: ImageVector get() = LibreofficeWriter
+    val livepatch: ImageVector get() = Livepatch
+    val log_viewer_app: ImageVector get() = LogViewerApp
+    val mail_app: ImageVector get() = MailApp
+    val maps_app: ImageVector get() = MapsApp
+    val mediaplayer_app: ImageVector get() = MediaplayerApp
+    val messaging_app: ImageVector get() = MessagingApp
+    val music_app: ImageVector get() = MusicApp
+    val notes_app: ImageVector get() = NotesApp
+    val nvidia_settings: ImageVector get() = NvidiaSettings
+    val org_gnome_software_create: ImageVector get() = OrgGnomeSoftwareCreate
+    val org_gnome_software_develop: ImageVector get() = OrgGnomeSoftwareDevelop
+    val org_gnome_software_socialize: ImageVector get() = OrgGnomeSoftwareSocialize
+    val org_gnome_software: ImageVector get() = OrgGnomeSoftware
+    val org_gnome_soundrecorder: ImageVector get() = OrgGnomeSoundrecorder
+    val org_gnome_texteditor: ImageVector get() = OrgGnomeTexteditor
+    val packages_app: ImageVector get() = PackagesApp
+    val passwords_app: ImageVector get() = PasswordsApp
+    val podcasts_app: ImageVector get() = PodcastsApp
+    val power_statistics: ImageVector get() = PowerStatistics
+    val quadrapassel: ImageVector get() = Quadrapassel
+    val rhythmbox: ImageVector get() = Rhythmbox
+    val root_terminal_app: ImageVector get() = RootTerminalApp
+    val scanner: ImageVector get() = Scanner
+    val screenshot_app: ImageVector get() = ScreenshotApp
+    val session_properties: ImageVector get() = SessionProperties
+    val shotwell: ImageVector get() = Shotwell
+    val snap_store: ImageVector get() = SnapStore
+    val software_properties: ImageVector get() = SoftwareProperties
+    val software_store: ImageVector get() = SoftwareStore
+    val software_updater: ImageVector get() = SoftwareUpdater
+    val sudoku_app: ImageVector get() = SudokuApp
+    val synaptic: ImageVector get() = Synaptic
+    val system_monitor_app: ImageVector get() = SystemMonitorApp
+    val terminal_app: ImageVector get() = TerminalApp
+    val to_do_app: ImageVector get() = ToDoApp
+    val transmission: ImageVector get() = Transmission
+    val tweaks_app: ImageVector get() = TweaksApp
+    val ubiquity: ImageVector get() = Ubiquity
+    val usage_app: ImageVector get() = UsageApp
+    val usb_creator_gtk: ImageVector get() = UsbCreatorGtk
+    val weather_app: ImageVector get() = WeatherApp
+    val webbrowser_app: ImageVector get() = WebbrowserApp
+    val wine: ImageVector get() = Wine
+    val winetricks: ImageVector get() = Winetricks
+    val workspace_switcher_left_bottom: ImageVector get() = WorkspaceSwitcherLeftBottom
+    val workspace_switcher_left_top: ImageVector get() = WorkspaceSwitcherLeftTop
+    val workspace_switcher_right_bottom: ImageVector get() = WorkspaceSwitcherRightBottom
+    val workspace_switcher_right_top: ImageVector get() = WorkspaceSwitcherRightTop
+
+    // categories
+    val applications_accessories: ImageVector get() = ApplicationsAccessories
+    val applications_development: ImageVector get() = ApplicationsDevelopment
+    val applications_games: ImageVector get() = ApplicationsGames
+    val applications_graphics: ImageVector get() = ApplicationsGraphics
+    val preferences_color: ImageVector get() = PreferencesColor
+    val preferences_desktop_accessibility: ImageVector get() = PreferencesDesktopAccessibility
+    val preferences_desktop_display: ImageVector get() = PreferencesDesktopDisplay
+    val preferences_desktop_font: ImageVector get() = PreferencesDesktopFont
+    val preferences_desktop_keyboard_shortcuts: ImageVector get() = PreferencesDesktopKeyboardShortcuts
+    val preferences_desktop_locale: ImageVector get() = PreferencesDesktopLocale
+    val preferences_desktop_online_accounts: ImageVector get() = PreferencesDesktopOnlineAccounts
+    val preferences_desktop_wallpaper: ImageVector get() = PreferencesDesktopWallpaper
+    val preferences_system_bluetooth: ImageVector get() = PreferencesSystemBluetooth
+    val preferences_system_brightness_lock: ImageVector get() = PreferencesSystemBrightnessLock
+    val preferences_system_network: ImageVector get() = PreferencesSystemNetwork
+    val preferences_system_sharing: ImageVector get() = PreferencesSystemSharing
+    val preferences_system_sound: ImageVector get() = PreferencesSystemSound
+    val preferences_system_time: ImageVector get() = PreferencesSystemTime
+    val preferences_system_users: ImageVector get() = PreferencesSystemUsers
+    val system_component_addon: ImageVector get() = SystemComponentAddon
+    val system_component_application: ImageVector get() = SystemComponentApplication
+    val system_component_codecs: ImageVector get() = SystemComponentCodecs
+    val system_component_driver: ImageVector get() = SystemComponentDriver
+    val system_component_input_sources: ImageVector get() = SystemComponentInputSources
+    val system_component_os_updates: ImageVector get() = SystemComponentOsUpdates
+
+    // devices
+    val audio_headphones: ImageVector get() = AudioHeadphones
+    val audio_headset: ImageVector get() = AudioHeadset
+    val audio_speakers: ImageVector get() = AudioSpeakers
+    val blueman_device: ImageVector get() = BluemanDevice
+    val computer: ImageVector get() = Computer
+    val drive_harddisk_ieee1394: ImageVector get() = DriveHarddiskIeee1394
+    val drive_harddisk_solidstate: ImageVector get() = DriveHarddiskSolidstate
+    val drive_harddisk_usb: ImageVector get() = DriveHarddiskUsb
+    val drive_harddisk: ImageVector get() = DriveHarddisk
+    val drive_multidisk: ImageVector get() = DriveMultidisk
+    val drive_optical: ImageVector get() = DriveOptical
+    val drive_removable_media_usb: ImageVector get() = DriveRemovableMediaUsb
+    val drive_removable_media: ImageVector get() = DriveRemovableMedia
+    val input_gaming: ImageVector get() = InputGaming
+    val input_keyboard: ImageVector get() = InputKeyboard
+    val input_mouse: ImageVector get() = InputMouse
+    val media_flash: ImageVector get() = MediaFlash
+    val media_floppy: ImageVector get() = MediaFloppy
+    val media_optical: ImageVector get() = MediaOptical
+    val multimedia_player: ImageVector get() = MultimediaPlayer
+    val phone: ImageVector get() = Phone
+    val printer_network: ImageVector get() = PrinterNetwork
+    val printer: ImageVector get() = Printer
+
+    // emblems
+    val emblem_danger: ImageVector get() = EmblemDanger
+    val emblem_default: ImageVector get() = EmblemDefault
+    val emblem_dialog_question: ImageVector get() = EmblemDialogQuestion
+    val emblem_documents: ImageVector get() = EmblemDocuments
+    val emblem_downloads: ImageVector get() = EmblemDownloads
+    val emblem_dropbox_infinite: ImageVector get() = EmblemDropboxInfinite
+    val emblem_dropbox_selsync: ImageVector get() = EmblemDropboxSelsync
+    val emblem_favorite: ImageVector get() = EmblemFavorite
+    val emblem_list_add: ImageVector get() = EmblemListAdd
+    val emblem_people: ImageVector get() = EmblemPeople
+    val emblem_personal: ImageVector get() = EmblemPersonal
+    val emblem_photos: ImageVector get() = EmblemPhotos
+    val emblem_readonly: ImageVector get() = EmblemReadonly
+    val emblem_shared: ImageVector get() = EmblemShared
+    val emblem_symbolic_link: ImageVector get() = EmblemSymbolicLink
+    val emblem_synchronizing: ImageVector get() = EmblemSynchronizing
+    val emblem_system: ImageVector get() = EmblemSystem
+    val emblem_unreadable: ImageVector get() = EmblemUnreadable
+    val emblem_urgent: ImageVector get() = EmblemUrgent
+    val emblem_videos: ImageVector get() = EmblemVideos
+
+    // legacy
+    val document_export: ImageVector get() = DocumentExport
+    val document_import: ImageVector get() = DocumentImport
+    val list_add: ImageVector get() = ListAdd
+    val list_remove: ImageVector get() = ListRemove
+
+    // mimetypes
+    val application_apk: ImageVector get() = ApplicationApk
+    val application_epub_zip: ImageVector get() = ApplicationEpubZip
+    val application_geo_json: ImageVector get() = ApplicationGeoJson
+    val application_illustrator: ImageVector get() = ApplicationIllustrator
+    val application_json: ImageVector get() = ApplicationJson
+    val application_octet_stream: ImageVector get() = ApplicationOctetStream
+    val application_pdf: ImageVector get() = ApplicationPdf
+    val application_pgp_encrypted: ImageVector get() = ApplicationPgpEncrypted
+    val application_pgp_keys: ImageVector get() = ApplicationPgpKeys
+    val application_pgp_signature: ImageVector get() = ApplicationPgpSignature
+    val application_photoshop: ImageVector get() = ApplicationPhotoshop
+    val application_postscript: ImageVector get() = ApplicationPostscript
+    val application_vnd_dart: ImageVector get() = ApplicationVndDart
+    val application_vnd_debian_binary_package: ImageVector get() = ApplicationVndDebianBinaryPackage
+    val application_vnd_flatpak: ImageVector get() = ApplicationVndFlatpak
+    val application_vnd_iccprofile: ImageVector get() = ApplicationVndIccprofile
+    val application_vnd_ms_access: ImageVector get() = ApplicationVndMsAccess
+    val application_vnd_ms_excel: ImageVector get() = ApplicationVndMsExcel
+    val application_vnd_ms_powerpoint: ImageVector get() = ApplicationVndMsPowerpoint
+    val application_vnd_ms_publisher: ImageVector get() = ApplicationVndMsPublisher
+    val application_vnd_ms_word: ImageVector get() = ApplicationVndMsWord
+    val application_vnd_openofficeorg_extension: ImageVector get() = ApplicationVndOpenofficeorgExtension
+    val application_vnd_snap: ImageVector get() = ApplicationVndSnap
+    val application_vnd_squashfs: ImageVector get() = ApplicationVndSquashfs
+    val application_x_7z_compressed: ImageVector get() = ApplicationX7ZCompressed
+    val application_x_addon: ImageVector get() = ApplicationXAddon
+    val application_x_apple_diskimage: ImageVector get() = ApplicationXAppleDiskimage
+    val application_x_audacity_project: ImageVector get() = ApplicationXAudacityProject
+    val application_x_bittorrent: ImageVector get() = ApplicationXBittorrent
+    val application_x_cd_image: ImageVector get() = ApplicationXCdImage
+    val application_x_desktop: ImageVector get() = ApplicationXDesktop
+    val application_x_executable: ImageVector get() = ApplicationXExecutable
+    val application_x_firmware: ImageVector get() = ApplicationXFirmware
+    val application_x_gzip: ImageVector get() = ApplicationXGzip
+    val application_x_hwp: ImageVector get() = ApplicationXHwp
+    val application_x_ipynb_json: ImageVector get() = ApplicationXIpynbJson
+    val application_x_java: ImageVector get() = ApplicationXJava
+    val application_x_karbon: ImageVector get() = ApplicationXKarbon
+    val application_x_krita: ImageVector get() = ApplicationXKrita
+    val application_x_lmms_project: ImageVector get() = ApplicationXLmmsProject
+    val application_x_mobipocket_ebook: ImageVector get() = ApplicationXMobipocketEbook
+    val application_x_model: ImageVector get() = ApplicationXModel
+    val application_x_ms_dos_executable: ImageVector get() = ApplicationXMsDosExecutable
+    val application_x_mswinurl: ImageVector get() = ApplicationXMswinurl
+    val application_x_musescore3: ImageVector get() = ApplicationXMusescore3
+    val application_x_perl: ImageVector get() = ApplicationXPerl
+    val application_x_php: ImageVector get() = ApplicationXPhp
+    val application_x_pkcs7_certificates: ImageVector get() = ApplicationXPkcs7Certificates
+    val application_x_python_bytecode: ImageVector get() = ApplicationXPythonBytecode
+    val application_x_qemu_disk: ImageVector get() = ApplicationXQemuDisk
+    val application_x_rar: ImageVector get() = ApplicationXRar
+    val application_x_raw_disk_image: ImageVector get() = ApplicationXRawDiskImage
+    val application_x_rss_xml: ImageVector get() = ApplicationXRssXml
+    val application_x_shellscript: ImageVector get() = ApplicationXShellscript
+    val application_x_subrip: ImageVector get() = ApplicationXSubrip
+    val application_x_theme: ImageVector get() = ApplicationXTheme
+    val application_x_trash: ImageVector get() = ApplicationXTrash
+    val application_x_virtualbox_hdd: ImageVector get() = ApplicationXVirtualboxHdd
+    val application_x_virtualbox_ova: ImageVector get() = ApplicationXVirtualboxOva
+    val application_x_virtualbox_ovf: ImageVector get() = ApplicationXVirtualboxOvf
+    val application_x_virtualbox_vbox_extpack: ImageVector get() = ApplicationXVirtualboxVboxExtpack
+    val application_x_virtualbox_vbox: ImageVector get() = ApplicationXVirtualboxVbox
+    val application_x_virtualbox_vdi: ImageVector get() = ApplicationXVirtualboxVdi
+    val application_x_virtualbox_vhd: ImageVector get() = ApplicationXVirtualboxVhd
+    val application_x_virtualbox_vmdk: ImageVector get() = ApplicationXVirtualboxVmdk
+    val application_x_yaml: ImageVector get() = ApplicationXYaml
+    val application_x_zip: ImageVector get() = ApplicationXZip
+    val audio_midi: ImageVector get() = AudioMidi
+    val audio_x_flac: ImageVector get() = AudioXFlac
+    val audio_x_generic: ImageVector get() = AudioXGeneric
+    val audio_x_mpeg: ImageVector get() = AudioXMpeg
+    val audio_x_mpegurl: ImageVector get() = AudioXMpegurl
+    val audio_x_ms_wma: ImageVector get() = AudioXMsWma
+    val audio_x_vorbis_ogg: ImageVector get() = AudioXVorbisOgg
+    val audio_x_wav: ImageVector get() = AudioXWav
+    val font_x_generic: ImageVector get() = FontXGeneric
+    val html_template: ImageVector get() = HtmlTemplate
+    val image_svg_xml: ImageVector get() = ImageSvgXml
+    val image_x_cursor: ImageVector get() = ImageXCursor
+    val image_x_generic: ImageVector get() = ImageXGeneric
+    val image_x_xcf: ImageVector get() = ImageXXcf
+    val inode_symlink: ImageVector get() = InodeSymlink
+    val libreoffice_oasis_database: ImageVector get() = LibreofficeOasisDatabase
+    val libreoffice_oasis_drawing: ImageVector get() = LibreofficeOasisDrawing
+    val libreoffice_oasis_formula: ImageVector get() = LibreofficeOasisFormula
+    val libreoffice_oasis_master_document: ImageVector get() = LibreofficeOasisMasterDocument
+    val libreoffice_oasis_presentation: ImageVector get() = LibreofficeOasisPresentation
+    val libreoffice_oasis_spreadsheet: ImageVector get() = LibreofficeOasisSpreadsheet
+    val libreoffice_oasis_text: ImageVector get() = LibreofficeOasisText
+    val libreoffice_oasis_web: ImageVector get() = LibreofficeOasisWeb
+    val message_rfc822: ImageVector get() = MessageRfc822
+    val package_x_generic: ImageVector get() = PackageXGeneric
+    val rom: ImageVector get() = Rom
+    val text_css: ImageVector get() = TextCss
+    val text_dockerfile: ImageVector get() = TextDockerfile
+    val text_html: ImageVector get() = TextHtml
+    val text_less: ImageVector get() = TextLess
+    val text_markdown: ImageVector get() = TextMarkdown
+    val text_richtext: ImageVector get() = TextRichtext
+    val text_rust: ImageVector get() = TextRust
+    val text_x_arduino: ImageVector get() = TextXArduino
+    val text_x_authors: ImageVector get() = TextXAuthors
+    val text_x_cpp_hdr: ImageVector get() = TextXCppHdr
+    val text_x_c: ImageVector get() = TextXC
+    val text_x_chdr: ImageVector get() = TextXChdr
+    val text_x_cobol: ImageVector get() = TextXCobol
+    val text_x_copying: ImageVector get() = TextXCopying
+    val text_x_cpp: ImageVector get() = TextXCpp
+    val text_x_csharp: ImageVector get() = TextXCsharp
+    val text_x_dart: ImageVector get() = TextXDart
+    val text_x_fortran: ImageVector get() = TextXFortran
+    val text_x_generic: ImageVector get() = TextXGeneric
+    val text_x_gettext_translation_template: ImageVector get() = TextXGettextTranslationTemplate
+    val text_x_gettext_translation: ImageVector get() = TextXGettextTranslation
+    val text_x_go: ImageVector get() = TextXGo
+    val text_x_haskell: ImageVector get() = TextXHaskell
+    val text_x_install: ImageVector get() = TextXInstall
+    val text_x_java: ImageVector get() = TextXJava
+    val text_x_javascript: ImageVector get() = TextXJavascript
+    val text_x_kotlin: ImageVector get() = TextXKotlin
+    val text_x_lilypond: ImageVector get() = TextXLilypond
+    val text_x_log: ImageVector get() = TextXLog
+    val text_x_lua: ImageVector get() = TextXLua
+    val text_x_makefile: ImageVector get() = TextXMakefile
+    val text_x_maven_xml: ImageVector get() = TextXMavenXml
+    val text_x_meson: ImageVector get() = TextXMeson
+    val text_x_nim: ImageVector get() = TextXNim
+    val text_x_patch: ImageVector get() = TextXPatch
+    val text_x_php: ImageVector get() = TextXPhp
+    val text_x_preview: ImageVector get() = TextXPreview
+    val text_x_python: ImageVector get() = TextXPython
+    val text_x_qml: ImageVector get() = TextXQml
+    val text_x_r: ImageVector get() = TextXR
+    val text_x_readme: ImageVector get() = TextXReadme
+    val text_x_ruby: ImageVector get() = TextXRuby
+    val text_x_sass: ImageVector get() = TextXSass
+    val text_x_scala: ImageVector get() = TextXScala
+    val text_x_script: ImageVector get() = TextXScript
+    val text_x_sql: ImageVector get() = TextXSql
+    val text_x_systemd_unit: ImageVector get() = TextXSystemdUnit
+    val text_x_tex: ImageVector get() = TextXTex
+    val text_x_typescript: ImageVector get() = TextXTypescript
+    val text_x_v: ImageVector get() = TextXV
+    val text_x_vala: ImageVector get() = TextXVala
+    val text_x_gcode: ImageVector get() = TextXGcode
+    val text_xml: ImageVector get() = TextXml
+    val unknown: ImageVector get() = Unknown
+    val video_x_generic: ImageVector get() = VideoXGeneric
+    val x_office_document: ImageVector get() = XOfficeDocument
+    val x_office_presentation: ImageVector get() = XOfficePresentation
+    val x_office_spreadsheet: ImageVector get() = XOfficeSpreadsheet
+
+    // places
+    val folder_documents: ImageVector get() = FolderDocuments
+    val folder_download: ImageVector get() = FolderDownload
+    val folder_dropbox: ImageVector get() = FolderDropbox
+    val folder_music: ImageVector get() = FolderMusic
+    val folder_pictures: ImageVector get() = FolderPictures
+    val folder_publicshare: ImageVector get() = FolderPublicshare
+    val folder_remote: ImageVector get() = FolderRemote
+    val folder_templates: ImageVector get() = FolderTemplates
+    val folder_videos: ImageVector get() = FolderVideos
+    val folder: ImageVector get() = Folder
+    val insync_folder: ImageVector get() = InsyncFolder
+    val network_server: ImageVector get() = NetworkServer
+    val network_workgroup: ImageVector get() = NetworkWorkgroup
+    val start_here: ImageVector get() = StartHere
+    val user_desktop: ImageVector get() = UserDesktop
+    val user_home: ImageVector get() = UserHome
+    val user_trash: ImageVector get() = UserTrash
+
+    // status
+    val appointment_soon: ImageVector get() = AppointmentSoon
+    val aptdaemon_add: ImageVector get() = AptdaemonAdd
+    val aptdaemon_cleanup: ImageVector get() = AptdaemonCleanup
+    val aptdaemon_delete: ImageVector get() = AptdaemonDelete
+    val aptdaemon_download: ImageVector get() = AptdaemonDownload
+    val aptdaemon_resolve: ImageVector get() = AptdaemonResolve
+    val aptdaemon_setup: ImageVector get() = AptdaemonSetup
+    val aptdaemon_update_cache: ImageVector get() = AptdaemonUpdateCache
+    val aptdaemon_upgrade: ImageVector get() = AptdaemonUpgrade
+    val aptdaemon_wait: ImageVector get() = AptdaemonWait
+    val aptdaemon_working: ImageVector get() = AptdaemonWorking
+    val avatar_default: ImageVector get() = AvatarDefault
+    val bluetooth_active: ImageVector get() = BluetoothActive
+    val bluetooth_disabled: ImageVector get() = BluetoothDisabled
+    val dialog_error: ImageVector get() = DialogError
+    val dialog_information: ImageVector get() = DialogInformation
+    val dialog_warning: ImageVector get() = DialogWarning
+    val folder_open: ImageVector get() = FolderOpen
+    val image_loading: ImageVector get() = ImageLoading
+    val image_missing: ImageVector get() = ImageMissing
+    val nm_device_wireless: ImageVector get() = NmDeviceWireless
+    val software_update_available: ImageVector get() = SoftwareUpdateAvailable
+}

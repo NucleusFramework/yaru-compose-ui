@@ -341,12 +341,6 @@ private fun rememberExampleSettings(): ExampleSettings {
 
 @Composable
 fun App() {
-    // Wire Coil 3 to Ktor 3 once per process — the Ktor network fetcher is
-    // not the default in Coil's commonMain; without setting the singleton
-    // here `SubcomposeAsyncImage(model = "https://...")` would fall back to
-    // Coil's `NetworkFetcher` (Android/JVM only) and silently fail on iOS /
-    // Wasm / JS. Used by `FullColorIconsPage` to fetch the Yaru icon PNGs.
-    setUpCoilForKtor()
     val settings = rememberExampleSettings()
     // Mirrors Dart `ThemeMode.system` resolving against platform brightness
     // via `MediaQuery.platformBrightness` (example.dart:19-25). Compose's own

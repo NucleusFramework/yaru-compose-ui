@@ -29,24 +29,11 @@ kotlin {
             api(compose.foundation)
             implementation(compose.components.resources)
             implementation(project(":yaru"))
+            implementation(project(":yaru-icons-extended"))
             implementation(libs.kotlinx.datetime)
-            // Coil 3 + Ktor 3 — used by FullColorIconsPage to fetch the
-            // Yaru icon PNG previews from raw.githubusercontent.com, mirroring
-            // Flutter's `Image.network(...)` in `full_color_icons_page.dart`.
-            implementation(libs.coil.compose)
-            implementation(libs.coil.network.ktor)
-            implementation(libs.ktor.client.core)
             // Kotlin syntax colouring for the gallery `CodeBlock`.
             implementation(libs.highlights)
         }
-        // Per-target Ktor engine (Coil's ktor3 fetcher is engine-agnostic, the
-        // host module must wire one in). CIO covers JVM + Android; Darwin
-        // covers iOS; the JS engine covers browser/Wasm targets.
-        jvmMain.dependencies { implementation(libs.ktor.client.cio) }
-        androidMain.dependencies { implementation(libs.ktor.client.cio) }
-        iosMain.dependencies { implementation(libs.ktor.client.darwin) }
-        named("jsMain").dependencies { implementation(libs.ktor.client.js) }
-        named("wasmJsMain").dependencies { implementation(libs.ktor.client.js) }
     }
 
     targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>().configureEach {
