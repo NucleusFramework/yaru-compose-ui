@@ -61,7 +61,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: release-assets-${{ runner.os }}-${{ matrix.arch }}
-          path: sample/desktopApp/build/compose/binaries/**/graalvm-*/**
+          # Installers only: the sibling `graalvm-app` directory holds the
+          # unpacked image (~600 MB of runtime libraries and a raw launcher).
+          path: |
+            sample/desktopApp/build/compose/binaries/**/graalvm-deb/*.deb
+            sample/desktopApp/build/compose/binaries/**/graalvm-dmg/*.dmg
+            sample/desktopApp/build/compose/binaries/**/graalvm-nsis/*.exe
           if-no-files-found: error
 
   publish:
@@ -74,6 +79,12 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
+      # `gh release create` resolves the repository from the git remote, so the
+      # publish job needs a checkout even though it builds nothing.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Download all build artifacts
         uses: actions/download-artifact@v4
         with:
