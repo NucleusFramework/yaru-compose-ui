@@ -70,6 +70,7 @@ import sample.app.pages.CheckboxPage
 import sample.app.pages.ChoiceChipBarPage
 import sample.app.pages.ClipPage
 import sample.app.pages.ColorDiskPage
+import sample.app.pages.ContextMenuPage
 import sample.app.pages.DateTimeEntryPage
 import sample.app.pages.DialogPage
 import sample.app.pages.DraggablePage
@@ -192,6 +193,11 @@ private val WidgetPages: List<SamplePage> = listOf(
         title = "YaruColorDisk",
         iconGlyph = YaruIcons.color_select,
     ) { ColorDiskPage() },
+    // No Dart counterpart — GTK apps get their context menus from the toolkit.
+    SamplePage(
+        title = "YaruContextMenu",
+        iconGlyph = YaruIcons.view_more,
+    ) { ContextMenuPage() },
     // example_page_items.dart:136-146.
     SamplePage(
         title = "YaruDateTimeEntry",
@@ -412,6 +418,13 @@ fun App() {
         }
         CompositionLocalProvider(
             LocalLayoutDirection provides layoutDirection,
+            // A native dialog composes in its own window: it cannot inherit the
+            // theme through the locals, so hand it the arguments to rebuild it.
+            LocalSampleThemeSpec provides SampleThemeSpec(
+                isDark = isDark,
+                highContrast = settings.highContrast.value,
+                variant = variant,
+            ),
         ) {
             ExampleHome(settings = settings)
         }
@@ -718,12 +731,33 @@ private fun VariantPicker(settings: ExampleSettings) {
  * Settings dialog mirrors `SettingsDialog` from example.dart (lines 182-220):
  * a `YaruDialogTitleBar` over a `Column` of `YaruListTile` toggles for
  * `compactMode` and `rtl`, with an outlined `Close` button.
+ *
+ * On the desktop it is hosted in a real `YaruDecoratedDialog` — a native child
+ * window whose close button comes from the windowing layer. Elsewhere it falls
+ * back to a Compose `Dialog` with a `YaruDialogTitleBar`.
  */
 @Composable
 private fun SettingsDialog(
     settings: ExampleSettings,
     onDismiss: () -> Unit,
 ) {
+    val nativeHost = LocalNativeDialogHost.current
+    if (nativeHost != null) {
+        val themeSpec = LocalSampleThemeSpec.current
+        nativeHost.Dialog(title = "Settings", onCloseRequest = onDismiss) {
+            YaruTheme(
+                isDark = themeSpec.isDark,
+                highContrast = themeSpec.highContrast,
+                variant = themeSpec.variant,
+            ) {
+                // No `Close` action here: the window chrome already carries the
+                // native close button, so repeating it as a button would give
+                // the dialog two of them.
+                SettingsDialogBody(settings = settings, onDismiss = onDismiss, showCloseAction = false)
+            }
+        }
+        return
+    }
     val scheme = LocalYaruColorScheme.current
     val shape = RoundedCornerShape(YaruConstants.WindowRadius)
     // Mirrors Dart's `_createDialogTheme` (common_themes.dart:315-330): the
@@ -756,40 +790,57 @@ private fun SettingsDialog(
                     title = { YaruText("Settings") },
                     onClose = onDismiss,
                 )
-                Column(modifier = Modifier.padding(YaruConstants.PagePadding)) {
-                    // example.dart:196-202. Dart switches to a `YaruNavigationPage`
-                    // layout (`_CompactPage`, example.dart:93-160) when compactMode
-                    // is on. ExampleHome reads this state and swaps the master/detail
-                    // shell for `YaruNavigationPage` at the top of its body.
-                    YaruListTile(
-                        title = { YaruText("Compact mode") },
-                        trailing = {
-                            YaruSwitch(
-                                checked = settings.compactMode.value,
-                                onCheckedChange = { settings.compactMode.value = it },
-                            )
-                        },
-                    )
-                    // example.dart:203-209.
-                    YaruListTile(
-                        title = { YaruText("RTL mode") },
-                        trailing = {
-                            YaruSwitch(
-                                checked = settings.rtl.value,
-                                onCheckedChange = { settings.rtl.value = it },
-                            )
-                        },
-                    )
-                }
-                // example.dart:212-217 — outlined `Close` button row.
-                Box(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    contentAlignment = Alignment.CenterEnd,
-                ) {
-                    Row(horizontalArrangement = Arrangement.End) {
-                        YaruOutlinedButton(onClick = onDismiss) { YaruText("Close") }
-                    }
-                }
+                SettingsDialogBody(settings = settings, onDismiss = onDismiss)
+            }
+        }
+    }
+}
+
+/**
+ * Everything under the dialog's title bar, shared by both hosts.
+ *
+ * [showCloseAction] mirrors `actions: [OutlinedButton]` from example.dart:212-217;
+ * a native dialog turns it off since its chrome already closes the window.
+ */
+@Composable
+private fun SettingsDialogBody(
+    settings: ExampleSettings,
+    onDismiss: () -> Unit,
+    showCloseAction: Boolean = true,
+) {
+    Column(modifier = Modifier.padding(YaruConstants.PagePadding)) {
+        // example.dart:196-202. Dart switches to a `YaruNavigationPage`
+        // layout (`_CompactPage`, example.dart:93-160) when compactMode
+        // is on. ExampleHome reads this state and swaps the master/detail
+        // shell for `YaruNavigationPage` at the top of its body.
+        YaruListTile(
+            title = { YaruText("Compact mode") },
+            trailing = {
+                YaruSwitch(
+                    checked = settings.compactMode.value,
+                    onCheckedChange = { settings.compactMode.value = it },
+                )
+            },
+        )
+        // example.dart:203-209.
+        YaruListTile(
+            title = { YaruText("RTL mode") },
+            trailing = {
+                YaruSwitch(
+                    checked = settings.rtl.value,
+                    onCheckedChange = { settings.rtl.value = it },
+                )
+            },
+        )
+    }
+    // example.dart:212-217 — outlined `Close` button row.
+    if (showCloseAction) {
+        Box(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            contentAlignment = Alignment.CenterEnd,
+        ) {
+            Row(horizontalArrangement = Arrangement.End) {
+                YaruOutlinedButton(onClick = onDismiss) { YaruText("Close") }
             }
         }
     }
