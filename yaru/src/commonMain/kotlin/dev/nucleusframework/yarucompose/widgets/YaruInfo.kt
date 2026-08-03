@@ -85,6 +85,9 @@ fun YaruInfoBadge(
         modifier = modifier,
         shape = shape,
         padding = contentPadding,
+        // A badge is a pill around its label — Dart wraps the child in a
+        // `Container`, so it must not stretch to the parent's width.
+        fillMaxWidth = false,
     ) {
         CompositionLocalProvider(
             LocalYaruTextStyle provides (style ?: typography.bodySmall),

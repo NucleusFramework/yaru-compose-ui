@@ -36,6 +36,10 @@ fun YaruBorderContainer(
     padding: PaddingValues = PaddingValues(0.dp),
     contentAlignment: Alignment = Alignment.TopStart,
     clipContent: Boolean = false,
+    // Flutter's `Container` wraps its child; the port fills the available width
+    // because that is what every box-shaped Yaru widget wants. Pill-shaped ones
+    // (`YaruInfoBadge`) opt out so several of them can share a row.
+    fillMaxWidth: Boolean = true,
     content: @Composable () -> Unit = {},
 ) {
     // Defensive clamp: `Modifier.border` with a negative or non-finite
@@ -57,7 +61,7 @@ fun YaruBorderContainer(
     Box(
         // Defensive: default to filling the available width — caller's modifier comes FIRST so explicit `width()`/`size()`/`widthIn(max=N)` tightens incoming constraints before the inner `fillMaxWidth()` runs, letting fillMaxWidth fill the caller's tight max instead of the parent's max. Callers like the autocomplete popup that gate on a measured width still get their explicit width respected; otherwise the container fills parent width by default.
         modifier = modifier
-            .then(Modifier.fillMaxWidth())
+            .then(if (fillMaxWidth) Modifier.fillMaxWidth() else Modifier)
             .then(if (clipContent) Modifier.clip(shape) else Modifier)
             // Apply the shape to the background fill so non-transparent
             // colors (e.g. `YaruTranslucentContainer`) don't paint square
@@ -82,6 +86,7 @@ fun YaruTranslucentContainer(
     padding: PaddingValues = PaddingValues(0.dp),
     contentAlignment: Alignment = Alignment.TopStart,
     clipContent: Boolean = false,
+    fillMaxWidth: Boolean = true,
     content: @Composable () -> Unit = {},
 ) {
     // Defensive clamp: `Color.copy(alpha = ...)` throws `IllegalArgumentException`
@@ -100,6 +105,7 @@ fun YaruTranslucentContainer(
         padding = padding,
         contentAlignment = contentAlignment,
         clipContent = clipContent,
+        fillMaxWidth = fillMaxWidth,
         content = content,
     )
 }
