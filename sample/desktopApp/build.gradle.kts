@@ -1,3 +1,4 @@
+import dev.nucleusframework.desktop.application.dsl.CompressionLevel
 import dev.nucleusframework.desktop.application.dsl.TargetFormat
 
 plugins {
@@ -28,8 +29,14 @@ nucleus.application {
 
     nativeDistributions {
         targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+        compressionLevel = CompressionLevel.Ultra
         packageName = "sample"
+        cleanupNativeLibs = true
         packageVersion = "1.0.0"
+        linux {
+            debMaintainer = "Nucleus"
+            homepage = "https://nucleusframework.dev"
+        }
     }
 
     graalvm {
