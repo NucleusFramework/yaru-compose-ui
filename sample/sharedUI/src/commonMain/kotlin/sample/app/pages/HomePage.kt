@@ -36,8 +36,8 @@ import dev.nucleusframework.yarucompose.widgets.YaruScrollViewUndershoot
 import dev.nucleusframework.yarucompose.widgets.YaruText
 import sample.app.NucleusAtom
 
-private const val RepositoryUrl = "https://github.com/kdroidFilter/YaruCompose"
-private const val AuthorUrl = "https://eliegambache.kdroidfilter.com/"
+private const val RepositoryUrl = "https://github.com/NucleusFramework/yaru-compose-ui"
+private const val AuthorUrl = "https://github.com/NucleusFramework"
 
 /** Below this width the feature cards stack instead of sitting side by side. */
 private val FeatureRowBreakpoint = 720.dp
@@ -76,7 +76,7 @@ fun HomePage(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 YaruText(
-                    text = "YaruCompose",
+                    text = "Yaru Compose UI",
                     style = typography.displaySmall,
                     fontWeight = FontWeight.Bold,
                 )
@@ -124,7 +124,7 @@ fun HomePage(
                     color = scheme.onSurfaceVariant,
                 )
                 YaruText(
-                    text = "Elie Gambache",
+                    text = "Nucleus Framework",
                     style = typography.bodyMedium,
                     color = scheme.primary,
                     textDecoration = TextDecoration.Underline,

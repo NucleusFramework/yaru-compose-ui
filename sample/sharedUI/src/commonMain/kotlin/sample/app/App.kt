@@ -126,7 +126,7 @@ private val OverviewPages: List<SamplePage> = listOf(
         title = "Home",
         iconGlyph = YaruIcons.home,
         selectedIconGlyph = YaruIcons.home_filled,
-        titleContent = { YaruText("YaruCompose") },
+        titleContent = { YaruText("Yaru Compose UI") },
     ) {
         val navigate = LocalSampleNavigator.current
         HomePage(

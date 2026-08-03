@@ -13,4 +13,4 @@ When redistributing, attributing the artwork as "Yaru Icons" is enough;
 linking to http://snwh.org/ where available is appreciated.
 
 This module's Kotlin source code (everything outside the icon assets above)
-remains MIT-licensed, matching the rest of YaruCompose.
+remains MIT-licensed, matching the rest of Yaru Compose UI.

@@ -71,3 +71,8 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 }
+
+// Same reason as :yaru — keep the generated `Res` package off `rootProject.name`.
+compose.resources {
+    packageOfResClass = "sample.app.generated.resources"
+}

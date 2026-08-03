@@ -1,4 +1,4 @@
-# YaruCompose
+# Yaru Compose UI
 
 Kotlin Multiplatform Library
 
@@ -92,7 +92,7 @@ collisions.
 
 ## License
 
-YaruCompose is available under the [MIT License](LICENSE).
+Yaru Compose UI is available under the [MIT License](LICENSE).
 
 The bundled Yaru icon artwork and the Ubuntu font family keep their own
 licenses — see [LICENSE](LICENSE) and

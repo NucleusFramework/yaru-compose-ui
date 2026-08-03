@@ -30,8 +30,8 @@ import sample.app.gallery.ExampleCard
 import sample.app.gallery.GalleryExample
 import sample.app.gallery.GalleryPage
 import sample.app.gallery.generated.GallerySources
-import yarucompose.sample.sharedui.generated.resources.Res
-import yarucompose.sample.sharedui.generated.resources.ubuntuhero
+import sample.app.generated.resources.Res
+import sample.app.generated.resources.ubuntuhero
 
 /** Mirrors `yaru.dart/example/lib/pages/selectable_container_page.dart`. */
 @Composable

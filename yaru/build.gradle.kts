@@ -74,11 +74,11 @@ mavenPublishing {
     coordinates("dev.nucleusframework.yarucompose", "yaru", "1.0.0")
 
     pom {
-        name = "YaruCompose"
+        name = "Yaru Compose UI"
         description = "A Compose Multiplatform port of Ubuntu's Yaru design system — 30+ widgets, " +
             "accent variants, light/dark, high contrast and RTL support."
         inceptionYear = "2025"
-        url = "https://github.com/kdroidFilter/YaruCompose"
+        url = "https://github.com/NucleusFramework/yaru-compose-ui"
 
         licenses {
             license {
@@ -89,15 +89,22 @@ mavenPublishing {
 
         developers {
             developer {
-                id = "kdroidfilter"
-                name = "Elie Gambache"
-                email = "elyahou.hadass@gmail.com"
+                id = "nucleusframework"
+                name = "Nucleus Framework"
+                url = "https://github.com/NucleusFramework"
             }
         }
 
         scm {
-            url = "https://github.com/kdroidFilter/YaruCompose"
+            url = "https://github.com/NucleusFramework/yaru-compose-ui"
         }
     }
     if (project.hasProperty("signing.keyId")) signAllPublications()
+}
+
+// Pin the generated `Res` package. Compose Resources derives it from the
+// Gradle group, which defaults to `rootProject.name` — renaming the repository
+// would otherwise move the class and break every import.
+compose.resources {
+    packageOfResClass = "dev.nucleusframework.yarucompose.generated.resources"
 }

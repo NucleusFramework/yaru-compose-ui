@@ -6,12 +6,12 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import org.jetbrains.compose.resources.Font
-import yarucompose.yaru.generated.resources.Res
-import yarucompose.yaru.generated.resources.ubuntu_bold
-import yarucompose.yaru.generated.resources.ubuntu_light
-import yarucompose.yaru.generated.resources.ubuntu_medium
-import yarucompose.yaru.generated.resources.ubuntu_regular
-import yarucompose.yaru.generated.resources.yaru_icons
+import dev.nucleusframework.yarucompose.generated.resources.Res
+import dev.nucleusframework.yarucompose.generated.resources.ubuntu_bold
+import dev.nucleusframework.yarucompose.generated.resources.ubuntu_light
+import dev.nucleusframework.yarucompose.generated.resources.ubuntu_medium
+import dev.nucleusframework.yarucompose.generated.resources.ubuntu_regular
+import dev.nucleusframework.yarucompose.generated.resources.yaru_icons
 
 /**
  * Builds the Ubuntu [FontFamily] from the bundled TTF assets.

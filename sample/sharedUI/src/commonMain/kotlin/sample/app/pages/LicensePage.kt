@@ -18,7 +18,7 @@ import dev.nucleusframework.yarucompose.widgets.YaruSection
 import dev.nucleusframework.yarucompose.widgets.YaruText
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import sample.app.gallery.GalleryPage
-import yarucompose.sample.sharedui.generated.resources.Res
+import sample.app.generated.resources.Res
 
 private const val YaruIconsCopyingUrl = "https://github.com/ubuntu/yaru/blob/master/COPYING"
 private const val UbuntuFontLicenceUrl = "https://ubuntu.com/legal/font-licence"
@@ -31,7 +31,7 @@ private const val UbuntuFontLicenceUrl = "https://ubuntu.com/legal/font-licence"
 fun LicensePage() {
     val licenseText by produceState<String?>(null) { value = readLicense() }
 
-    GalleryPage(description = "YaruCompose is available under the MIT License.") {
+    GalleryPage(description = "Yaru Compose UI is available under the MIT License.") {
         YaruSection(
             headline = { YaruText("MIT License") },
             contentPadding = PaddingValues(16.dp),

@@ -42,7 +42,7 @@ import dev.nucleusframework.yarucompose.themes.YaruColorScheme
 import dev.nucleusframework.yarucompose.themes.YaruConstants
 
 /**
- * Yaru-styled wrapper for Nucleus' `DecoratedWindow` — the YaruCompose
+ * Yaru-styled wrapper for Nucleus' `DecoratedWindow` — the Yaru Compose UI
  * counterpart of Nucleus' other design-system wrappers (e.g. `JewelDecoratedWindow`).
  *
  * The window is client-side decorated: no system title bar, the Yaru

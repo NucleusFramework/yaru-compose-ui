@@ -34,11 +34,11 @@ mavenPublishing {
     coordinates("dev.nucleusframework.yarucompose", "yaru-decorated-window", "1.0.0")
 
     pom {
-        name = "YaruCompose Decorated Window"
-        description = "Client-side decorated desktop window and dialog for YaruCompose, backed by Nucleus — " +
+        name = "Yaru Compose UI Decorated Window"
+        description = "Client-side decorated desktop window and dialog for Yaru Compose UI, backed by Nucleus — " +
             "GNOME-style headerbar chrome, native window controls and theme sync."
         inceptionYear = "2025"
-        url = "https://github.com/kdroidFilter/YaruCompose"
+        url = "https://github.com/NucleusFramework/yaru-compose-ui"
 
         licenses {
             license {
@@ -49,14 +49,14 @@ mavenPublishing {
 
         developers {
             developer {
-                id = "kdroidfilter"
-                name = "Elie Gambache"
-                email = "elyahou.hadass@gmail.com"
+                id = "nucleusframework"
+                name = "Nucleus Framework"
+                url = "https://github.com/NucleusFramework"
             }
         }
 
         scm {
-            url = "https://github.com/kdroidFilter/YaruCompose"
+            url = "https://github.com/NucleusFramework/yaru-compose-ui"
         }
     }
     if (project.hasProperty("signing.keyId")) signAllPublications()

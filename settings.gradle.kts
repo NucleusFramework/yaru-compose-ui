@@ -1,4 +1,4 @@
-rootProject.name = "YaruCompose"
+rootProject.name = "yaru-compose-ui"
 
 pluginManagement {
     repositories {

@@ -49,10 +49,10 @@ mavenPublishing {
     coordinates("dev.nucleusframework.yarucompose", "yaru-icons-extended", "1.0.0")
 
     pom {
-        name = "YaruCompose Icons Extended"
+        name = "Yaru Compose UI Icons Extended"
         description = "Bundled Yaru full-colour icon theme as Compose ImageVector for Kotlin Multiplatform — no network access required."
         inceptionYear = "2025"
-        url = "https://github.com/kdroidFilter/YaruCompose"
+        url = "https://github.com/NucleusFramework/yaru-compose-ui"
 
         licenses {
             license {
@@ -63,14 +63,14 @@ mavenPublishing {
 
         developers {
             developer {
-                id = "kdroidfilter"
-                name = "Elie Gambache"
-                email = "elyahou.hadass@gmail.com"
+                id = "nucleusframework"
+                name = "Nucleus Framework"
+                url = "https://github.com/NucleusFramework"
             }
         }
 
         scm {
-            url = "https://github.com/kdroidFilter/YaruCompose"
+            url = "https://github.com/NucleusFramework/yaru-compose-ui"
         }
     }
     if (project.hasProperty("signing.keyId")) signAllPublications()
