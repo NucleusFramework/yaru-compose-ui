@@ -44,6 +44,12 @@ private const val DayPlaceholder = "d"
 // same reason as `DateDelimiter` above.
 private const val InvalidFormatLabel = "Invalid format."
 private const val OutOfRangeLabel = "Out of range."
+// Dart resolves the floating label from `MaterialLocalizations`:
+// `dateInputLabel` for date/datetime entries and `timePickerInputHelpText`
+// for time entries. These are the en-locale strings, hardcoded for the same
+// reason as `DateDelimiter` above.
+private const val DateInputLabel = "Enter Date"
+private const val TimeInputLabel = "Enter time"
 // endregion
 
 /** Mirrors `SelectableDateTimePredicate` from `yaru_date_time_entry.dart`. */
@@ -726,6 +732,10 @@ private fun DateTimeEntryImpl(
         // segment values are snapshot state, so reading them makes validation
         // live.
         errorText = holder.validateDateTime(),
+        // Mirrors the `labelText` resolution in the Dart `build()`:
+        // time-only entries use the time-picker help text, date and datetime
+        // entries use the date input label.
+        label = if (type == DateTimeEntryType.Time) TimeInputLabel else DateInputLabel,
         autofocus = autofocus,
         trailing = trailing,
     )
