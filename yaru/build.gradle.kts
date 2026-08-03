@@ -71,7 +71,7 @@ android {
 //https://www.jetbrains.com/help/kotlin-multiplatform-dev/multiplatform-publish-libraries.html
 mavenPublishing {
     publishToMavenCentral()
-    coordinates("dev.nucleusframework.yarucompose", "yaru", "1.0.0")
+    coordinates("dev.nucleusframework.yarucompose", "yaru", version.toString())
 
     pom {
         name = "Yaru Compose UI"
@@ -99,7 +99,9 @@ mavenPublishing {
             url = "https://github.com/NucleusFramework/yaru-compose-ui"
         }
     }
-    if (project.hasProperty("signing.keyId")) signAllPublications()
+    // The CI signs with an in-memory key (ORG_GRADLE_PROJECT_signingInMemoryKey);
+    // local publishes stay unsigned unless a GPG keyring is configured.
+    if (project.hasProperty("signingInMemoryKey") || project.hasProperty("signing.keyId")) signAllPublications()
 }
 
 // Pin the generated `Res` package. Compose Resources derives it from the

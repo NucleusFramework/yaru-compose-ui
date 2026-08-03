@@ -9,3 +9,16 @@ plugins {
     alias(libs.plugins.android.application).apply(false)
     alias(libs.plugins.ksp).apply(false)
 }
+
+// Publishing is tag-driven: the CI exports RELEASE_VERSION=<tag>. Local builds
+// (and `publishToMavenLocal`) fall back to `libraryVersion` in gradle.properties.
+val libraryVersion: String =
+    System
+        .getenv("RELEASE_VERSION")
+        ?.removePrefix("v")
+        ?.takeIf { it.isNotBlank() && it.first().isDigit() }
+        ?: providers.gradleProperty("libraryVersion").get()
+
+allprojects {
+    version = libraryVersion
+}
