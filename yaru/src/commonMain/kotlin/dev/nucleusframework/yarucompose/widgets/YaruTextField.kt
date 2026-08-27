@@ -94,7 +94,10 @@ fun YaruTextField(
                 shape = shape,
             )
             .border(width = borderWidth, color = borderColor, shape = shape)
-            .defaultMinSize(minHeight = YaruConstants.ButtonHeight)
+            // 128 dp matches Flutter's common desktop field floor and keeps
+            // `weight(1f)` below well-defined when the parent width is unbounded
+            // (e.g. the trailing slot of `YaruListTile`).
+            .defaultMinSize(minWidth = 128.dp, minHeight = YaruConstants.ButtonHeight)
             .padding(start = 12.dp, end = 12.dp, top = 10.dp, bottom = 9.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -184,7 +187,10 @@ fun YaruTextField(
                 shape = shape,
             )
             .border(width = borderWidth, color = borderColor, shape = shape)
-            .defaultMinSize(minHeight = YaruConstants.ButtonHeight)
+            // 128 dp matches Flutter's common desktop field floor and keeps
+            // `weight(1f)` below well-defined when the parent width is unbounded
+            // (e.g. the trailing slot of `YaruListTile`).
+            .defaultMinSize(minWidth = 128.dp, minHeight = YaruConstants.ButtonHeight)
             .padding(start = 12.dp, end = 12.dp, top = 10.dp, bottom = 9.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

@@ -3,12 +3,18 @@ package sample.app.pages
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import dev.nucleusframework.yarucompose.icons.YaruIcon
 import dev.nucleusframework.yarucompose.icons.YaruIcons
 import dev.nucleusframework.yarucompose.widgets.YaruListTile
 import dev.nucleusframework.yarucompose.widgets.YaruListTileSquare
+import dev.nucleusframework.yarucompose.widgets.YaruSwitch
 import dev.nucleusframework.yarucompose.widgets.YaruText
+import dev.nucleusframework.yarucompose.widgets.YaruTextField
 import dev.nucleusframework.yarucompose.widgets.YaruTileList
 import sample.app.gallery.ExampleCard
 import sample.app.gallery.GalleryExample
@@ -36,6 +42,13 @@ fun ListTilePage() {
             title = "Disabled rows",
             sourceCode = GallerySources.TileListDisabledExample,
         ) { TileListDisabledExample() }
+
+        SectionHeader("Trailing controls")
+        ExampleCard(
+            title = "Switch and text field",
+            description = "Title stays readable when trailing is a `fillMaxWidth` field.",
+            sourceCode = GallerySources.ListTileTrailingControlsExample,
+        ) { ListTileTrailingControlsExample() }
     }
 }
 
@@ -89,6 +102,36 @@ private fun TileListExample() {
             },
         ),
     )
+}
+
+@GalleryExample("YaruListTile", "Trailing controls")
+@Composable
+private fun ListTileTrailingControlsExample() {
+    var enabled by remember { mutableStateOf(true) }
+    var proxy by remember { mutableStateOf("10.0.0.1:9080") }
+    Column(modifier = Modifier.fillMaxWidth()) {
+        YaruListTile(
+            titleText = "Notifications",
+            subtitleText = "Show a notification when a download completes.",
+            leading = { YaruIcon(YaruIcons.notification) },
+            trailing = {
+                YaruSwitch(checked = enabled, onCheckedChange = { enabled = it })
+            },
+        )
+        YaruListTile(
+            titleText = "Proxy",
+            subtitleText = "Optional HTTP(S) proxy used by yt-dlp.",
+            leading = { YaruIcon(YaruIcons.network) },
+            trailing = {
+                YaruTextField(
+                    value = proxy,
+                    onValueChange = { proxy = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                )
+            },
+        )
+    }
 }
 
 @GalleryExample("YaruListTile", "Disabled")

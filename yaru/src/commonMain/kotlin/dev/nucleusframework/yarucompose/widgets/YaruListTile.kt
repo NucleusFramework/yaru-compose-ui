@@ -3,14 +3,17 @@ package dev.nucleusframework.yarucompose.widgets
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -104,65 +107,77 @@ fun YaruListTile(
     val focused by rememberKeyboardFocusedState(src)
 
     val row: @Composable () -> Unit = {
-        val rowModifier = Modifier
-            .heightIn(min = minHeight)
-            .clip(shape)
-            .let {
-                if (effectiveOnTap != null) {
-                    it
-                        // Mirrors Dart `InkWell.mouseCursor` default
-                        // (`WidgetStateMouseCursor.clickable` →
-                        // `SystemMouseCursors.click`) used by `YaruListTile`'s
-                        // inner `InkWell` (yaru_list_tile.dart:151).
-                        .pointerHoverIcon(PointerIcon.Hand)
-                        .clickable(
-                            interactionSource = src,
-                            indication = androidx.compose.foundation.LocalIndication.current,
-                            role = role,
-                            onClick = effectiveOnTap,
-                        )
-                        // Defensive: merge state into the clickable's semantics node so screen readers announce on/off / selected state alongside the role.
-                        .let { m ->
-                            if (toggleableState != null || selected != null) {
-                                m.semantics {
-                                    if (toggleableState != null) this.toggleableState = toggleableState
-                                    if (selected != null) this.selected = selected
-                                }
-                            } else m
-                        }
-                } else it
-            }
-            .padding(padding)
-        Row(modifier = rowModifier, verticalAlignment = Alignment.CenterVertically) {
-            if (leading != null) {
-                leading()
-                Spacer(Modifier.width(safeHorizontalGap))
-            }
-            Column(
-                modifier = Modifier.weight(1f),
-                horizontalAlignment = if (centerTitle) Alignment.CenterHorizontally else Alignment.Start,
-            ) {
-                val typography = LocalYaruTypography.current
-                val scheme = LocalYaruColorScheme.current
-                CompositionLocalProvider(
-                    LocalYaruTextStyle provides disabledTextStyle(typography.labelLarge, enabled, scheme),
+        // BoxWithConstraints so a `fillMaxWidth` trailing child (text field,
+        // combo box) cannot be measured with infinite max width — that would
+        // consume the whole row and leave the title Column at 0 px, wrapping
+        // each glyph onto its own line. Cap trailing at half the tile; title
+        // `weight(1f)` takes the rest. Flutter's `Expanded` title + intrinsic
+        // trailing relies on the same bounded-width Row.
+        BoxWithConstraints {
+            val maxTrailingWidth = maxWidth * 0.5f
+            val rowModifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = minHeight)
+                .clip(shape)
+                .let {
+                    if (effectiveOnTap != null) {
+                        it
+                            // Mirrors Dart `InkWell.mouseCursor` default
+                            // (`WidgetStateMouseCursor.clickable` →
+                            // `SystemMouseCursors.click`) used by `YaruListTile`'s
+                            // inner `InkWell` (yaru_list_tile.dart:151).
+                            .pointerHoverIcon(PointerIcon.Hand)
+                            .clickable(
+                                interactionSource = src,
+                                indication = androidx.compose.foundation.LocalIndication.current,
+                                role = role,
+                                onClick = effectiveOnTap,
+                            )
+                            // Defensive: merge state into the clickable's semantics node so screen readers announce on/off / selected state alongside the role.
+                            .let { m ->
+                                if (toggleableState != null || selected != null) {
+                                    m.semantics {
+                                        if (toggleableState != null) this.toggleableState = toggleableState
+                                        if (selected != null) this.selected = selected
+                                    }
+                                } else m
+                            }
+                    } else it
+                }
+                .padding(padding)
+            Row(modifier = rowModifier, verticalAlignment = Alignment.CenterVertically) {
+                if (leading != null) {
+                    leading()
+                    Spacer(Modifier.width(safeHorizontalGap))
+                }
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = if (centerTitle) Alignment.CenterHorizontally else Alignment.Start,
                 ) {
-                    title()
-                }
-                if (subtitle != null) {
+                    val typography = LocalYaruTypography.current
+                    val scheme = LocalYaruColorScheme.current
                     CompositionLocalProvider(
-                        LocalYaruTextStyle provides disabledTextStyle(typography.labelMedium, enabled, scheme),
+                        LocalYaruTextStyle provides disabledTextStyle(typography.labelLarge, enabled, scheme),
                     ) {
-                        subtitle()
+                        title()
                     }
-                    // Trailing 1dp gap below subtitle, mirroring Dart's
-                    // `SizedBox(height: 1)` in yaru_list_tile.dart.
-                    Spacer(Modifier.height(1.dp))
+                    if (subtitle != null) {
+                        CompositionLocalProvider(
+                            LocalYaruTextStyle provides disabledTextStyle(typography.labelMedium, enabled, scheme),
+                        ) {
+                            subtitle()
+                        }
+                        // Trailing 1dp gap below subtitle, mirroring Dart's
+                        // `SizedBox(height: 1)` in yaru_list_tile.dart.
+                        Spacer(Modifier.height(1.dp))
+                    }
                 }
-            }
-            if (trailing != null) {
-                Spacer(Modifier.width(safeHorizontalGap))
-                trailing()
+                if (trailing != null) {
+                    Spacer(Modifier.width(safeHorizontalGap))
+                    Box(modifier = Modifier.widthIn(max = maxTrailingWidth)) {
+                        trailing()
+                    }
+                }
             }
         }
     }
