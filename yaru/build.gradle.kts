@@ -57,7 +57,7 @@ kotlin {
 
 android {
     namespace = "dev.nucleusframework.yarucompose.yaru"
-    compileSdk = 36
+    compileSdk = 37
     defaultConfig {
         minSdk = 23
     }
