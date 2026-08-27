@@ -5,7 +5,7 @@ It brings the GNOME/Yaru design language — widgets, accent variants, the Ubunt
 Desktop and Web through Compose Multiplatform.
 
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.4.10-7F52FF.svg?logo=kotlin)](https://kotlinlang.org)
-[![Compose Multiplatform](https://img.shields.io/badge/Compose_Multiplatform-1.11.1-4285F4.svg?logo=jetpackcompose)](https://www.jetbrains.com/compose-multiplatform/)
+[![Compose Multiplatform](https://img.shields.io/badge/Compose_Multiplatform-1.12.0-4285F4.svg?logo=jetpackcompose)](https://www.jetbrains.com/compose-multiplatform/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 [Documentation & Live Demo](https://nucleusframework.github.io/yaru-compose-ui/)

@@ -1,10 +1,10 @@
 [versions]
 
 kotlin = "2.4.10"
-nucleus = "2.2.0"
-agp = "8.13.2"
+nucleus = "2.5.2"
+agp = "9.1.1"
 maven-publish = "0.37.0"
-compose-multiplatform = "1.11.1"
+compose-multiplatform = "1.12.0"
 kotlinx-coroutines = "1.11.0"
 kotlinx-datetime = "0.8.0"
 androidx-activityCompose = "1.13.0"

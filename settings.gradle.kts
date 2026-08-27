@@ -2,8 +2,9 @@ rootProject.name = "yaru-compose-ui"
 
 pluginManagement {
     repositories {
-        // Nucleus is consumed from a local publish while the window work is
-        // unreleased (see `nucleus` in the version catalog).
+        // Prefer a locally published Nucleus snapshot when present
+        // (see `nucleus` in the version catalog). Released versions resolve
+        // from Maven Central.
         mavenLocal { content { includeGroupByRegex("dev\\.nucleusframework.*") } }
         google {
             content { 

@@ -44,7 +44,7 @@ jobs:
       # Gradle runs on 17 (jvmToolchain(17)); the GraalVM 25 JDK used by
       # native-image is downloaded by the Nucleus plugin itself.
       - name: Setup Nucleus (GraalVM)
-        uses: NucleusFramework/Nucleus/.github/actions/setup-nucleus@v2.2.0
+        uses: NucleusFramework/Nucleus/.github/actions/setup-nucleus@v2.5.2
         with:
           java-version: '17'
           graalvm: 'true'
@@ -102,7 +102,7 @@ jobs:
           fi
 
       - name: Publish release
-        uses: NucleusFramework/Nucleus/.github/actions/publish-release@v2.2.0
+        uses: NucleusFramework/Nucleus/.github/actions/publish-release@v2.5.2
         with:
           artifacts-path: artifacts
           tag: ${{ github.ref_name }}

@@ -62,7 +62,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().con
 }
 android {
     namespace = "dev.nucleusframework.yarucompose.sharedUI"
-    compileSdk = 36
+    compileSdk = 37
     defaultConfig {
         minSdk = 23
     }
