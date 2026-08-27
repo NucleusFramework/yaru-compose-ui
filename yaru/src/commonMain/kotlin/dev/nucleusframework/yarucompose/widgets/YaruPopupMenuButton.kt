@@ -6,7 +6,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -35,6 +37,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
@@ -126,16 +129,36 @@ fun <T> YaruPopupMenuButton(
     // `Modifier.padding` below and must be clamped here.
     val layoutDirection = LocalLayoutDirection.current
     val safeChildPadding = childPadding.coerceNonNegative(layoutDirection)
+    val density = LocalDensity.current
+    var buttonWidth by remember { mutableStateOf(0.dp) }
 
-    Box(modifier = modifier) {
+    // Combo-style buttons (`showArrow`) must share a width with the menu —
+    // otherwise the trigger hugs the current label while the popup is pinned
+    // to [minPopupWidth], leaving a narrow button under a wide menu.
+    // Icon-only triggers (`showArrow = false`) stay wrap-content; their menu
+    // is still at least [minPopupWidth], like a typical kebab menu.
+    BoxWithConstraints(modifier = modifier) {
+        val stretchToParent = constraints.hasBoundedWidth &&
+            constraints.minWidth >= constraints.maxWidth
         YaruButton(
             onClick = { if (enabled) expanded = !expanded },
             enabled = enabled,
             variant = variant,
             contentPadding = contentPadding,
+            modifier = Modifier
+                .then(if (showArrow) Modifier.widthIn(min = safeMinPopupWidth) else Modifier)
+                .then(if (stretchToParent) Modifier.fillMaxWidth() else Modifier)
+                .onGloballyPositioned { coords ->
+                    val width = with(density) { coords.size.width.toDp() }
+                    if (width != buttonWidth) buttonWidth = width
+                },
         ) {
             // Match Dart: `Row(spaceBetween)` with the chevron on the trailing edge.
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Box(modifier = Modifier.padding(safeChildPadding)) {
                     // Dart wrapper forces FontWeight.w500 on the label.
                     CompositionLocalProvider(
@@ -161,14 +184,22 @@ fun <T> YaruPopupMenuButton(
         // `itemBuilder` produces no children.
         if (expanded && items.isNotEmpty()) {
             // Defensive: `Popup.offset` is `IntOffset` in *pixels*, not Dp — `TitleBarItemHeight.value.toInt()` would hardcode 35 px regardless of density, overlapping the trigger on >1.0x screens. Convert via `LocalDensity.current.run { TitleBarItemHeight.roundToPx() }`.
-            val anchorYPx = with(LocalDensity.current) { YaruConstants.TitleBarItemHeight.roundToPx() }
+            val anchorYPx = with(density) { YaruConstants.TitleBarItemHeight.roundToPx() }
+            // Lock the menu to the trigger width (at least [minPopupWidth]).
+            // `fixedWidth` also stops `fillMaxWidth` rows inside a Popup from
+            // expanding to the window — the IntrinsicSize.Max fallback is not
+            // enough once the popup's incoming max constraint is the screen.
+            val popupWidth = maxOf(safeMinPopupWidth, buttonWidth)
             Popup(
                 onDismissRequest = { expanded = false },
                 // from yaru_popup_menu_button.dart: offset = const Offset(0, kYaruTitleBarItemHeight)
                 offset = IntOffset(0, anchorYPx),
                 properties = PopupProperties(focusable = true),
             ) {
-                YaruPopupMenuSurface(minWidth = safeMinPopupWidth) {
+                YaruPopupMenuSurface(
+                    minWidth = popupWidth,
+                    fixedWidth = popupWidth,
+                ) {
                     items.forEach { entry ->
                         PopupMenuRow(
                             entry = entry,
